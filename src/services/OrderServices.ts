@@ -1,6 +1,7 @@
 // ===== IMPORTS =====
 
 import { supabase } from "../lib/supabase"
+import { OrderSchema } from "./ValidationServices"
 
 
 
@@ -41,17 +42,24 @@ export const OrderServices = {
     // Client Function
     async createOrder (orderData: any) {
 
+        const validation = OrderSchema.safeParse(orderData)
+
+        if (!validation.success) {
+            console.error('Validation Error', validation.error.message)
+            return
+        }
+
         const {data, error} = await supabase
             .from('Order')
             .insert([
                 {
                     // Database Match = Frontend Data Fetching
-                    name: orderData.orderName, 
-                    client_id: Number(orderData.clientId),   
-                    service_id: Number(orderData.serviceId), 
-                    staff_id: Number(orderData.staffId),     
-                    room_id: Number(orderData.roomId),       
-                    order_status: orderData.orderStatus, // Status Enum
+                    name: validation.data.orderName, 
+                    client_id: Number(validation.data.clientId),   
+                    service_id: Number(validation.data.serviceId), 
+                    staff_id: Number(validation.data.staffId),     
+                    room_id: Number(validation.data.roomId),       
+                    order_status: validation.data.orderStatus, // Status Enum
                 }
             ])
             .select()

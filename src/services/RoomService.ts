@@ -1,5 +1,6 @@
 // ===== IMPORTS =====
 import { supabase } from "../lib/supabase"
+import { RoomSchema } from "./ValidationServices"
 
 
 
@@ -40,15 +41,22 @@ export const RoomServices = {
 
     async createRoom (roomData: any) {
 
+        const validation = RoomSchema.safeParse(roomData)
+
+        if (!validation.success) {
+            console.error('Validation Failed', validation.error.message)
+            return
+        }
+
         const {data, error} = await supabase
             .from('Room')
             .insert([
                 {
-                    name: roomData.roomName,
-                    assigned_id: roomData.staffId,
-                    assigned_name: roomData.staffName,
-                    is_available: roomData.isAvailable,
-                    updated_at: roomData.updatedAt // Initial Data as the Created At Data
+                    name: validation.data.roomName,
+                    assigned_id: Number(validation.data.staffId),
+                    assigned_name: validation.data.staffName,
+                    is_available: validation.data.isAvailable,
+                    updated_at: validation.data.updatedAt // Initial Data as the Created At Data
 
                 }
             ])

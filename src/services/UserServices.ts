@@ -1,6 +1,6 @@
 // ==== Imports ====
 import { supabase } from "../lib/supabase";
-// import type { User, UserRole } from "../types/database.types";
+import { UserSchema } from "./ValidationServices";
 
 
 export const Users = {
@@ -39,18 +39,26 @@ export const Users = {
 
     async createUser (newUserData: any) {
 
+        // Uses Zod Validation
+        const validation = UserSchema.safeParse(newUserData)
+
+        if (!validation.success) {
+            console.error('Validation Failed', validation.error.message)
+            return
+        }
+
         const {data, error} = await supabase
             .from('Users')
             .insert([
                 {
-                first_name: newUserData.firstName,
-                middle_name: newUserData.middleName,
-                last_name: newUserData.lastName,
-                email_add: newUserData.emailAdd,
-                phone_number: newUserData.phoneNum,
-                username: newUserData.username,
-                password: newUserData.password,
-                role: newUserData.userRole,
+                first_name: validation.data.firstName,
+                middle_name: validation.data.middleName,
+                last_name: validation.data.lastName,
+                email_add: validation.data.emailAddress,
+                phone_number: validation.data.phoneNum,
+                username: validation.data.username,
+                password: validation.data.password,
+                role: validation.data.userRole,
                 }
             ])
             .select()
