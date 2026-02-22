@@ -17,8 +17,9 @@ export interface User {
     phoneNum: number,
     username: string,
     password: string,
-    created_at: string // ISO Date Format
     userRole: UserRole,
+    created_at: string // ISO Date Format
+
 
 };
 
