@@ -1,5 +1,6 @@
 // ===== IMPORTS =====
 import { supabase } from "../lib/supabase";
+import { ServiceSchema } from "./ValidationServices";
 
 
 export const ServiceServices = {
@@ -38,14 +39,22 @@ export const ServiceServices = {
 
     async createService (serviceData: any) {
 
+        // Zod Validation
+        const validation = ServiceSchema.safeParse(serviceData)
+
+        if (!validation.success) {
+            console.error('Validation Failed', validation.error.message)
+            return
+        }
+
         const {data, error} = await supabase
             .from('Service')
             .insert([
                 {
-                    name: serviceData.serviceName,
-                    category: serviceData.category,
-                    price: serviceData.price,
-                    description: serviceData.description,
+                    name: validation.data.serviceName,
+                    category: validation.data.category,
+                    price: Number(validation.data.price),
+                    description: validation.data.description,
                 }
             ])
             .select()
