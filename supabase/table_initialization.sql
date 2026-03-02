@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public."Users" (
     id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     first_name TEXT,
     middle_name TEXT,
+    last_name TEXT,
     email_add TEXT,
     phone_num TEXT,
     -- PASSWORD AUTOMATICALLY WILL GET HANDLED BY SUPABASE

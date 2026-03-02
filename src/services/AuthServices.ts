@@ -20,9 +20,10 @@ export const AuthServices = {
         }
     },
 
-    async signup(firstName: string, middleName: string, lastName: string, phoneNum: string, email: string, username: string, password: string) {
+    async signup(firstName: string, middleName: string, lastName: string, phoneNum: string, email: string, password: string) {
         try {
-            const { data, error } = await supabase.auth.signUp({
+            // Step 1: Create auth user
+            const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: email,
                 password: password,
                 options: {
@@ -30,20 +31,21 @@ export const AuthServices = {
                         first_name: firstName,
                         middle_name: middleName,
                         last_name: lastName,
-                        phone_num: phoneNum,
-                        username: username,
+                        phone_num: phoneNum
                     }
                 }
             });
 
-            if (error) {
-                return { data: null, error: error.message };
+            if (authError) {
+                console.error('Signup error:', authError);
+                return { data: null, error: authError.message };
             }
 
-            return { data, error: null };
+            return { data: authData, error: null };
 
         } catch (error: any) {
-            return { data: null, error: error.message || 'An unexpected error occured.' };
+            console.error('Signup exception:', error);
+            return { data: null, error: error.message || 'An unexpected error occurred.' };
         }
     }
 };

@@ -1,120 +1,161 @@
-import { useState } from "react";
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AuthServices } from '../../services/AuthServices';
+
+// 1. Define the validation schema
+const signupSchema = z.object({
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  middleName: z.string().min(2, 'Middle name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  phoneNum: z.string().min(10, 'Phone number must be at least 10 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+});
+
+type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
-  const [form, setForm] = useState({
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    email: "",
-    username: "",
-    password: "",
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const onSubmit = async (data: SignupFormData) => {
+    setIsSubmitting(true);
+    setErrorMsg('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: handle sign up
+    const { data: authData, error } = await AuthServices.signup(
+      data.firstName,
+      data.middleName,
+      data.lastName,
+      data.phoneNum,
+      data.email,
+      data.password
+    );
+
+    if (error) {
+      setErrorMsg(error);
+      setIsSubmitting(false);
+    } else {
+      navigate('/');
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left: Lavender branding panel */}
-      <div
-        className="flex-1 flex items-center justify-center min-h-[260px] md:min-h-screen"
-        style={{ backgroundColor: "#D1C4E9" }}
-      >
-        <h1 className="spa-title text-center px-6 select-none">
-          SPA RESERVATION<br />KIOSK
-        </h1>
-      </div>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Create Account</h2>
+      
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {errorMsg && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg text-sm">
+            {errorMsg}
+          </div>
+        )}
 
-      {/* Right: Sign up form panel */}
-      <div className="flex items-center justify-center bg-white w-full md:w-auto md:min-w-[420px] lg:min-w-[500px] px-6 py-12 md:py-0">
-        <form
-          onSubmit={handleSubmit}
-          className="w-full max-w-[397px] border border-[#D9D9D9] rounded-lg p-6 flex flex-col gap-6 bg-white"
-        >
-          <FormField
-            label="First Name"
-            name="firstName"
-            value={form.firstName}
-            onChange={handleChange}
+        {/* First Name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">First Name</label>
+          <input
+            {...register('firstName')}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
-          <FormField
-            label="Middle Name"
-            name="middleName"
-            value={form.middleName}
-            onChange={handleChange}
+          {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
+        </div>
+
+        {/* Middle Name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Middle Name</label>
+          <input
+            {...register('middleName')}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
-          <FormField
-            label="Last Name"
-            name="lastName"
-            value={form.lastName}
-            onChange={handleChange}
+          {errors.middleName && <p className="text-red-500 text-xs mt-1">{errors.middleName.message}</p>}
+        </div>
+
+        {/* Last Name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Last Name</label>
+          <input
+            {...register('lastName')}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
-          <FormField
-            label="E-mail"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
+          {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
+        </div>
+
+        {/* Phone Number */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Phone Number</label>
+          <input
+            {...register('phoneNum')}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
-          <FormField
-            label="Username"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
+          {errors.phoneNum && <p className="text-red-500 text-xs mt-1">{errors.phoneNum.message}</p>}
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input
+            {...register('email')}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
-          <FormField
-            label="Password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
+          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+        </div>
+
+        {/* Password */}
+        <div className="relative">
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            {...register('password')}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
           <button
-            type="submit"
-            className="w-full py-3 rounded-lg bg-[#2C2C2C] border border-[#2C2C2C] text-[#F5F5F5] text-base tracking-widest font-normal hover:bg-[#1a1a1a] transition-colors duration-200"
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-2 top-9 text-gray-500"
           >
-            SIGN UP
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
-        </form>
-      </div>
-    </div>
-  );
-}
+          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+        </div>
 
-interface FormFieldProps {
-  label: string;
-  name: string;
-  type?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
+        {/* Confirm Password */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Confirm Password</label>
+          <input
+            type="password"
+            {...register('confirmPassword')}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+          {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>}
+        </div>
 
-function FormField({ label, name, type = "text", value, onChange }: FormFieldProps) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label
-        htmlFor={name}
-        className="text-base font-normal text-[#1E1E1E] leading-[1.4]"
-        style={{ fontFamily: "Inter, -apple-system, Roboto, Helvetica, sans-serif" }}
-      >
-        {label}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder="Value"
-        className="w-full px-4 py-3 rounded-lg border border-[#D9D9D9] bg-white text-base text-[#B3B3B3] placeholder-[#B3B3B3] focus:outline-none focus:border-[#2C2C2C] focus:text-[#1E1E1E] transition-colors"
-        style={{ fontFamily: "Inter, -apple-system, Roboto, Helvetica, sans-serif" }}
-      />
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition flex justify-center items-center"
+        >
+          {isSubmitting ? <Loader2 className="animate-spin" /> : 'Sign Up'}
+        </button>
+      </form>
     </div>
   );
 }
