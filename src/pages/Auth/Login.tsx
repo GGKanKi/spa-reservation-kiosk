@@ -24,6 +24,7 @@ export default function LoginPage() {
     setLoading(false);
   } else {
     navigate("/dashboard"); // Moves to the next page on success
+    console.log("Login successful:", data); // Logs the successful login data
   }
 
   console.log("Login Data:", data);

@@ -1,26 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AuthServices } from '../../services/AuthServices';
-
-// 1. Define the validation schema
-const signupSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  middleName: z.string().min(2, 'Middle name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  phoneNum: z.string().min(10, 'Phone number must be at least 10 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
-
-type SignupFormData = z.infer<typeof signupSchema>;
+import { SignUpSchema, type SignUpFormData } from '../../services/ValidationServices';
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,29 +16,38 @@ export default function SignupPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(SignUpSchema),
   });
 
-  const onSubmit = async (data: SignupFormData) => {
+  const onSubmit = async (data: SignUpFormData) => {
     setIsSubmitting(true);
     setErrorMsg('');
 
-    const { data: authData, error } = await AuthServices.signup(
-      data.firstName,
-      data.middleName,
-      data.lastName,
-      data.phoneNum,
-      data.email,
-      data.password
+    // Server Side Fields
+    const finaluserData = {
+      ...data,
+      created_at: new Date().toISOString(),
+      userRole: 'member', // Default Role for New Signups
+    };
+
+    // Send Final Data to AuthServices Sign Up
+    const { data: signupData, error } = await AuthServices.signup(
+      finaluserData.firstName,
+      finaluserData.middleName,
+      finaluserData.lastName,
+      finaluserData.phoneNum,
+      finaluserData.emailAddress, 
+      finaluserData.password
     );
 
     if (error) {
+      console.error("Signup Error:", error);
       setErrorMsg(error);
       setIsSubmitting(false);
     } else {
-      navigate('/');
-      setIsSubmitting(false);
+      console.log("Signup successful:", signupData);
+      navigate("/dashboard");
     }
   };
 
@@ -109,14 +102,14 @@ export default function SignupPage() {
           {errors.phoneNum && <p className="text-red-500 text-xs mt-1">{errors.phoneNum.message}</p>}
         </div>
 
-        {/* Email */}
+        {/* Email - Matched to Schema 'emailAddress' */}
         <div>
           <label className="block text-sm font-medium mb-1">Email</label>
           <input
-            {...register('email')}
+            {...register('emailAddress')}
             className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+          {errors.emailAddress && <p className="text-red-500 text-xs mt-1">{errors.emailAddress.message}</p>}
         </div>
 
         {/* Password */}
