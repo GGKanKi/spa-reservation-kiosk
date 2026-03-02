@@ -21,7 +21,7 @@ BEGIN
     );
     RETURN new;
 END;
-$$ LANGUAGE plpsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_auth_user_created on auth_users;
 
