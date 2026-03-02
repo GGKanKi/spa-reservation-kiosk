@@ -26,6 +26,8 @@ export default function LoginPage() {
     navigate("/dashboard"); // Moves to the next page on success
   }
 
+  console.log("Login Data:", data);
+
   };
 
   return (
