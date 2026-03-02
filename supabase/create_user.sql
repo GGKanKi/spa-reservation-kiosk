@@ -55,6 +55,200 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
+
+-- ============================
+-- SERVICES TABLE AND POLICIES
+-- ============================
+
+-- Table Creation
+CREATE TABLE IF NOT EXISTS public."Service" (
+
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT,
+    category TEXT,
+    price NUMERIC,
+    description TEXT,
+    created TIMESTAMPTZ DEFAULT now()
+
+);
+
+
+-- ENABLE RLS 
+ALTER TABLE public."Service" ENABLE ROW LEVEL SECURITY;
+
+-- POLICIES
+CREATE POLICY "Users can see available spa services."
+ON public."Service"
+FOR SELECT
+USING (true);
+
+
+CREATE POLICY "Only admins can add services."
+ON public."Service"
+FOR ALL
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public."Users"
+        WHERE id = auth.uid() and role = 'admin'
+    )
+);
+
+
+-- ============================
+-- ROOM TABLE AND POLICIES
+-- ============================
+
+CREATE TABLE IF NOT EXISTS public."Room" (
+
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    assigned_id uuid REFERENCES public."Users"(id) ON DELETE SET NULL,
+    assigned_name TEXT,
+    is_available TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+
+);
+
+-- ENABLE RLS POLICIES
+ALTER TABLE public."Room" ENABLE ROW LEVEL SECURITY;
+
+-- POLICIES
+CREATE POLICY "Users Can See All Rooms"
+ON public."Room"
+FOR SELECT
+USING (true);
+
+
+-- Assuming only Admins manage rooms
+CREATE POLICY "Only admins can manage rooms"
+ON public."Room"
+FOR ALL -- This covers INSERT, UPDATE, and DELETE
+USING (
+    EXISTS (
+        SELECT 1 FROM public."Users"
+        WHERE id = auth.uid() AND role = 'admin'
+    )
+);
+
+
+
+-- ==============================
+-- RESERVATION TABLE AND POLICIES
+-- ==============================
+
+
+CREATE TABLE IF NOT EXISTS public."Reservation" (
+
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    client_id uuid REFERENCES public."Users"(id) ON DELETE SET NULL,
+    room_id uuid REFERENCES public."Room"(id) ON DELETE SET NULL,
+    staff_id uuid REFERENCES public."Users"(id)  ON DELETE SET NULL,
+    reservation_time TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now()
+
+);
+
+-- ENABLE RLS POLICIES
+ALTER TABLE public."Reservation" ENABLE ROW LEVEL SECURITY;
+
+-- POLICIES
+CREATE POLICY "Users can see relevant Reservations"
+ON public."Reservation"
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1 FROM public."Users"
+        WHERE id = auth.uid() AND (
+            role = 'admin' OR           -- Admins see all
+            id = client_id OR           -- Clients see their own
+            id = staff_id               -- Staff see their assigned work
+        )
+    )
+);
+
+
+-- Assuming only Admins manage Reservations
+CREATE POLICY "Only admins can manage Reservations"
+ON public."Reservation"
+FOR ALL 
+USING (
+    EXISTS (
+        SELECT 1 FROM public."Users"
+        WHERE id = auth.uid() AND role = 'admin'
+    )
+)
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public."Users"
+        WHERE id = auth.uid() AND role = 'admin'
+    )
+);
+
+
+
+-- ============================
+-- ORDER TABLE AND POLICIES
+-- ============================
+
+
+CREATE TABLE IF NOT EXISTS public."Order" (
+
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    service_id uuid REFERENCES public."Service"(id) ON DELETE SET NULL,
+    client_id uuid REFERENCES public."Users"(id) ON DELETE SET NULL,
+    staff_id uuid REFERENCES public."Users"(id)  ON DELETE SET NULL,
+    room_id uuid REFERENCES public."Room"(id) ON DELETE SET NULL,
+    order_status TEXT DEFAULT 'pending',
+    created_at TIMESTAMPTZ DEFAULT now()
+
+);
+
+-- ENABLE RLS POLICIES
+ALTER TABLE public."Order" ENABLE ROW LEVEL SECURITY;
+
+-- POLICIES
+CREATE POLICY "Users can see relevant orders"
+ON public."Order"
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1 FROM public."Users"
+        WHERE id = auth.uid() AND (
+            role = 'admin' OR           -- Admins see all
+            id = client_id OR           -- Clients see their own
+            id = staff_id               -- Staff see their assigned work
+        )
+    )
+);
+
+
+-- Assuming only Admins manage Orders
+CREATE POLICY "Only admins can manage Orders"
+ON public."Order"
+FOR ALL 
+USING (
+    EXISTS (
+        SELECT 1 FROM public."Users"
+        WHERE id = auth.uid() AND role = 'admin'
+    )
+)
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public."Users"
+        WHERE id = auth.uid() AND role = 'admin'
+    )
+);
+
+
+-- Index For Searching Orders by Client base on Time
+CREATE INDEX IF NOT EXISTS idx_reservation_time ON public."Reservation"(reservation_time);
+
+-- Index For Searching Client Records
+CREATE INDEX IF NOT EXISTS idx_order_client ON public."Order"(client_id);
+
 -- ============================================================================
 -- TO BE UPDATED FOR OTHER AUTH FUNCTIONS
 -- RUN IN SUPABASE DASHBOARD > SQL EDITOR
