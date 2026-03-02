@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 // IMPORTED FUNCTIONS FOR AUTH
 // ===========================
 import { AuthServices } from "../../services/AuthServices";
+import { Users } from "../../services/UserServices";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -16,19 +17,57 @@ export default function LoginPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Sign in logic placeholder
-    const { data, error } = await AuthServices.login(email, password);
+    setErrorMsg("");
 
-    if (error) {
-    setErrorMsg(error); // Shows the error in the red box
-    setLoading(false);
-  } else {
-    navigate("/dashboard"); // Moves to the next page on success
-    console.log("Login successful:", data); // Logs the successful login data
-  }
+    try {
+      // Step 1: Sign in with email and password
+      const { data: authData, error: authError } = await AuthServices.login(email, password);
 
-  console.log("Login Data:", data);
+      if (authError) {
+        setErrorMsg(authError);
+        setLoading(false);
+        return;
+      }
 
+      // Step 2: Get user role from database
+      const userId = authData?.user?.id;
+      if (!userId) {
+        setErrorMsg("Unable to retrieve user information.");
+        setLoading(false);
+        return;
+      }
+
+      const userData = await Users.selectUser(userId);
+
+      if (!userData) {
+        setErrorMsg("Unable to retrieve user role.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Login successful:", userData);
+
+      // Step 3: Route based on user role
+      const userRole = userData.role?.toLowerCase();
+
+      switch (userRole) {
+        case 'admin':
+          navigate("/admin/dashboard");
+          break;
+        case 'member':
+          navigate("/member/dashboard");
+          break;
+        case 'staff':
+          navigate("/staff/dashboard");
+          break;
+        default:
+          setErrorMsg(`Unknown user role: ${userRole}`);
+          setLoading(false);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "An unexpected error occurred.");
+      setLoading(false);
+    }
   };
 
   return (
