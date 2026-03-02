@@ -47,5 +47,24 @@ export const AuthServices = {
             console.error('Signup exception:', error);
             return { data: null, error: error.message || 'An unexpected error occurred.' };
         }
-    }
+    },
+
+    async getUserProfile(userId: string) {
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (error) {
+                return { data: null, error: error.message };
+            }
+
+            return { data, error: null };
+        } catch (error: any) {
+            return { data: null, error: error.message || 'Failed to fetch user profile.' };
+        }
+    },
+
 };
