@@ -250,6 +250,7 @@ CREATE INDEX IF NOT EXISTS idx_reservation_time ON public."Reservation"(reservat
 CREATE INDEX IF NOT EXISTS idx_order_client ON public."Order"(client_id);
 
 -- ============================================================================
--- TO BE UPDATED FOR OTHER AUTH FUNCTIONS
+-- DONE!
+-- INITIALIZED TABLES FOR THE SPA RESERVATION SYSTEM WITH RLS POLICIES
 -- RUN IN SUPABASE DASHBOARD > SQL EDITOR
 -- ============================================================================
