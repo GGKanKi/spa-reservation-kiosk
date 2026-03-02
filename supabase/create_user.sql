@@ -242,6 +242,13 @@ WITH CHECK (
     )
 );
 
+
+-- Index For Searching Orders by Client base on Time
+CREATE INDEX IF NOT EXISTS idx_reservation_time ON public."Reservation"(reservation_time);
+
+-- Index For Searching Client Records
+CREATE INDEX IF NOT EXISTS idx_order_client ON public."Order"(client_id);
+
 -- ============================================================================
 -- TO BE UPDATED FOR OTHER AUTH FUNCTIONS
 -- RUN IN SUPABASE DASHBOARD > SQL EDITOR
