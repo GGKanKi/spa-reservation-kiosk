@@ -23,8 +23,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-DROP TRIGGER IF EXISTS on_auth_user_created on auth_users;
+DROP TRIGGER IF EXISTS on_auth_user_created on auth.users;
 
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE PROCEDURE public.sign_up_user();
+
+
+-- ============================================================================
+-- CREATE USERS FROM SIGNUP AND ADD DATA TO USER AUTHENTICATION AND USER TABLES
+-- Spa Reservation - SQL Database Migration
+-- RUN IN SUPABASE DASHBOARD > SQL EDITOR
+-- ============================================================================
