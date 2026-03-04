@@ -23,6 +23,7 @@ export const UserSchema = z.object({
 export const SignUpSchema = UserSchema.omit({
     created_at: true,
     userRole: true,
+    username: true,
 }).extend({
     confirmPassword: z.string().min(8, "Confirm Password must be 8 Characters Long.")
 }).refine((data) => data.password === data.confirmPassword, {
