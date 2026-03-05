@@ -10,6 +10,15 @@ import StaffDashboard from './pages/StaffPages/Dashboard';
 import Schedule from './pages/StaffPages/Schedule';
 import ClientList from './pages/StaffPages/Clientlist';
 import Transaction from './pages/StaffPages/Transactions';
+import UserManagement from './pages/AdminPages/UserManagement';
+import StaffManagement from './pages/AdminPages/StaffManagement';
+import ServiceManagement from './pages/AdminPages/ServiceManagement';
+import RoomManagement from './pages/AdminPages/RoomManagementt';
+import Reservation from './pages/AdminPages/Reservation';
+import PaymentList from './pages/AdminPages/Payment';
+import ReportList from './pages/AdminPages/Report';
+import Settings from './pages/AdminPages/Setting';
+
 
 
 function App() {
@@ -19,11 +28,25 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/" element={<LoginPage />} />
+
+        {/* MEMBER PAGES */}
         <Route path="/member/dashboard" element={<MemberDashboard />} /> 
         <Route path="/book-a-service" element={<MemberBooking />} />
         <Route path="/reservations" element={<MemberReservations />} />
         <Route path="/orders" element={<MemberOrders />} />
+
+        {/* ADMIN PAGES */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/user-management" element={<UserManagement />} />
+        <Route path="/admin/staff-management" element={<StaffManagement />} />
+        <Route path="/admin/service-management" element={<ServiceManagement />} />
+        <Route path="/admin/room-management" element={<RoomManagement />} />
+        <Route path="/admin/reservations" element={<Reservation />} />
+        <Route path="/admin/payments" element={<PaymentList />} />
+        <Route path="/admin/reports" element={<ReportList />} />
+        <Route path="/admin/settings" element={<Settings />} />
+
+        {/* STAFF PAGES */}
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
         <Route path="/staff/client-list" element={<ClientList />} />
         <Route path="/staff/schedule" element={<Schedule />} />

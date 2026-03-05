@@ -13,7 +13,7 @@ const navItems = [
   { label: "SETTINGS", path: "/admin/settings" },
 ];
 
-export default function AdminDashboard() {
+export default function UserManagement() {
   const navigate = useNavigate();
   const location = useLocation();
 

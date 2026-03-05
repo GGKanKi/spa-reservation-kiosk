@@ -8,7 +8,7 @@ const navItems = [
   { label: "ORDERS", path: "/orders" },
 ];
 
-export default function MemberBooking() {
+export default function MemberDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
