@@ -13,10 +13,41 @@ export const AuthServices = {
                 return { data: null, error: error.message };
             }
 
-            return { data, error: null };
+            const token = data.session?.access_token || null;
 
-        } catch (error: any) {
-            return { data: null, error: error.message || 'An unexpected error occured.' };
+            if (token) {
+                localStorage.setItem("authToken", token);
+            }
+
+            return { data, error: null };
+            } catch (err: any) {
+            return { data: null, error: err.message };
+        }
+    },
+
+    // Stored Token
+    getToken() {
+        return localStorage.getItem("authToken");
+    },
+
+    // Handle Logout
+    async logout() {
+        await supabase.auth.signOut();
+        localStorage.removeItem("authToken");
+    },
+
+    // Token Verification
+    async verifyToken() {
+        const token = this.getToken();
+        if (!token) {
+            return { valid: false, error: "No token found" };
+        }
+
+        try {
+        const { data, error } = await supabase.auth.getUser(token);
+        return !error && !!data.user;
+        } catch {
+        return false;
         }
     },
 
@@ -52,7 +83,7 @@ export const AuthServices = {
     async getUserProfile(userId: string) {
         try {
             const { data, error } = await supabase
-                .from('users')
+                .from('Users')
                 .select('*')
                 .eq('id', userId)
                 .single();
