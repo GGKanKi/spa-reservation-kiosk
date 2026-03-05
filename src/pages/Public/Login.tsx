@@ -37,7 +37,13 @@ export default function LoginPage() {
         return;
       }
 
-      const userData = await Users.selectUser(userId);
+      const {data: userData, error: profileError} = await AuthServices.getUserProfile(userId);
+
+      if (profileError) {
+        setErrorMsg(profileError);
+        setLoading(false);
+        return;
+      }
 
       if (!userData) {
         setErrorMsg("Unable to retrieve user role.");
