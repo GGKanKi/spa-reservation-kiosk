@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 // IMPORTED FUNCTIONS FOR AUTH
 // ===========================
 import { AuthServices } from "../../services/AuthServices";
-import { Users } from "../../services/UserServices";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

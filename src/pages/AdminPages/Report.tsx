@@ -3,16 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 const navItems = [
   { label: "DASHBOARD", path: "/admin/dashboard" },
-  { label: "USER MANAGEMENT", path: "/usermanagement" },
-  { label: "STAFF MANAGEMENT", path: "/staffmanagement" },
-  { label: "SERVICE MANAGEMENT", path: "/servicemanagement" },
-  { label: "ROOM MANAGEMENT", path: "/roommanagement" },
-  { label: "ORDERS", path: "/orders" },
-  { label: "PAYMENTS", path: "/payments" },
-  { label: "REPORTS", path: "/reports" },
-  { label: "SETTINGS", path: "/settings" },
-
-
+  { label: "USER MANAGEMENT", path: "/admin/user-management" },
+  { label: "STAFF MANAGEMENT", path: "/admin/staff-management" },
+  { label: "SERVICE MANAGEMENT", path: "/admin/service-management" },
+  { label: "ROOM MANAGEMENT", path: "/admin/room-management" },
+  { label: "ORDERS", path: "/admin/orders" },
+  { label: "PAYMENTS", path: "/admin/payments" },
+  { label: "REPORTS", path: "/admin/reports" },
+  { label: "SETTINGS", path: "/admin/settings" },
 ];
 
 export default function ReportList() {
