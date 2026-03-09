@@ -44,10 +44,10 @@ export const AuthServices = {
         }
 
         try {
-        const { data, error } = await supabase.auth.getUser(token);
-        return !error && !!data.user;
-        } catch {
-        return false;
+            const { data, error } = await supabase.auth.getUser(token);
+            return !error && !!data.user; 
+        } catch (err: any) {
+            return { valid: false, error: err.message };
         }
     },
 
