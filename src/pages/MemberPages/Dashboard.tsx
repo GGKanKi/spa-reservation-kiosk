@@ -21,6 +21,7 @@ export default function MemberDashboard() {
 
   useEffect(() => {
     const getUserData = async () => {
+      // Get User data as A Table/Dictionary
       const {data: {user} } = await supabase.auth.getUser();
       if (user && user.user_metadata) {
         const firstName = user.user_metadata.first_name || "";
@@ -90,10 +91,6 @@ export default function MemberDashboard() {
               <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] text-black uppercase">
                 WELCOME, {fullName}!
               </h1>
-        </div>
-
-        <div className="mb-[30px] ml-[10px]">
-          <span className="text-[32px]">🔔</span>
         </div>
 
         <div className="flex gap-6 w-full">
