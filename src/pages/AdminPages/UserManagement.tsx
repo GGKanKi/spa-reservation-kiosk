@@ -1,5 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useEffect } from "react";
+import { Users } from "../../services/UserServices";
+import {supabase} from "../../lib/supabase";
 
 const navItems = [
   { label: "DASHBOARD", path: "/admin/dashboard" },
@@ -17,7 +21,44 @@ export default function UserManagement() {
   const navigate = useNavigate();
   const location = useLocation();
 
+
+  const [memberData, setmemberData] = useState<any[]>([])
+
+  useEffect(() => {
+ 
+    const fetchData = async () => {
+
+      try {
+      const results = await Users.getUserByRole('member');
+
+      console.log("DEBUG: Fetched member data:", results);
+      console.log('RESULT TYPES:', typeof results)
+
+
+        if (results) {
+          setmemberData(Array.isArray(results) ? results : []);
+        } else {
+          setmemberData([]);
+        }
+      } catch (error) {
+        console.error('Error fetching member data:', error);
+        setmemberData([]);
+      }
+    };
+
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('Current user session:', session);
+  };
+
+    checkAuth();
+    fetchData();
+  }, []);
+
+
   return (
+    <div className="flex w-full min-h-screen">
     <aside className="w-[248px] min-w-[248px] min-h-screen flex flex-col bg-[#D1C4E9] border-r-[5px] border-[#9F0AA2] rounded-tr-[10px] rounded-br-[10px]">
       {/* Image Holder */}
       <div className="w-full h-[158px] bg-[#D9D9D9] rounded-tr-[10px] flex-shrink-0" />
@@ -62,5 +103,51 @@ export default function UserManagement() {
         </button>
       </div>
     </aside>
+
+
+    <main className="flex-1 p-10 bg white">
+      <div className="bg-white border-[3px] border-black rounded-[20px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">USER MANAGEMENT</h1>
+          
+          <table className="w-full border-[2px] border-black rounded-[10px] overflow-hidden">
+            <thead className="bg-[#D1C4E9]">
+              <tr>
+                <th className="p-4 border-b-2 border-black font-bold">NAME</th>
+                <th className="p-4 border-b-2 border-black font-bold">ROLE</th>
+                <th className="p-4 border-b-2 border-black font-bold">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {memberData && memberData.length > 0 ? (memberData.map((user) => (
+                <tr key={user.id}>
+                  <td className="p-4 border-b border-black">{`${user.first_name} ${user.last_name}`.trim()}</td>
+                  <td className="p-4 border-b border-black">{user.role}</td>
+                  <td className="p-4 border-b border-black">
+                    <button className="text-[#9F0AA2] font-bold">EDIT</button>
+                  </td>
+                </tr>
+              ))) : (
+                <tr>
+                  <td className="p-4 border-b border-black text-center" colSpan={3}>
+                    No users found.
+                  </td>
+                </tr>
+              )}
+              <tr>
+                <td className="p-4 border-b border-black">Sample User</td>
+                <td className="p-4 border-b border-black">MEMBER</td>
+                <td className="p-4 border-b border-black">
+                  <button className="text-[#9F0AA2] font-bold">EDIT</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+    </main>
+
+
+
+
+    </div>
   );
 }

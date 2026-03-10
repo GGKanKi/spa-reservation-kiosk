@@ -34,6 +34,13 @@ ON public."Users"
 FOR UPDATE 
 USING (auth.uid() = id);
 
+-- ENABLE AUTHENTICATED USERS TO SEE THEIR DATA FOR ADMIN/STAFF
+CREATE POLICY "Authenticated Users can read Data" 
+ON "Users"
+FOR SELECT
+TO authenticated
+USING (true);
+
 -- PUTS DATA INSIDE THE 1st AUTH LAYER
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$

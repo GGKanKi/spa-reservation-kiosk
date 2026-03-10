@@ -36,6 +36,31 @@ export const Users = {
 
     },
 
+    async getUserByRole (role: string) {
+
+        // First, get ALL users to debug
+        const {data: allUsers, error: allError} = await supabase
+            .from('Users')
+            .select('id, first_name, role')
+
+        console.log('ALL USERS:', allUsers);
+
+        // Now filter by role
+        const {data, error} = await supabase
+            .from('Users')
+            .select()
+            .eq('role', role) 
+
+        console.log("Query result:", data, error); 
+
+        if (error) {
+            console.log('Error:', error)
+            return []
+        }
+
+        return data || []
+    },
+
 
     async createUser (newUserData: any) {
 
