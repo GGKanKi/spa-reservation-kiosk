@@ -23,6 +23,19 @@ export default function UserManagement() {
 
 
   const [memberData, setmemberData] = useState<any[]>([])
+  const [checkUserData, setCheckUserData] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const openCheckModal = (user:any) => {
+    setCheckUserData(user);
+    setShowModal(true);
+  };
+
+  const closeCheckModal = () => {
+    setShowModal(false);
+    setCheckUserData(null)
+  };
+
 
   useEffect(() => {
  
@@ -47,14 +60,14 @@ export default function UserManagement() {
     };
 
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log('Current user session:', session);
-  };
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current user session:', session);
+    };
 
-    checkAuth();
-    fetchData();
-  }, []);
+      checkAuth();
+      fetchData();
+    }, []);
 
 
   return (
@@ -105,7 +118,7 @@ export default function UserManagement() {
     </aside>
 
 
-    <main className="flex-1 p-10 bg white">
+    <main className="flex-1 p-10 bg-white">
       <div className="bg-white border-[3px] border-black rounded-[20px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
           <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">USER MANAGEMENT</h1>
           
@@ -123,7 +136,12 @@ export default function UserManagement() {
                   <td className="p-4 border-b border-black">{`${user.first_name} ${user.last_name}`.trim()}</td>
                   <td className="p-4 border-b border-black">{user.role}</td>
                   <td className="p-4 border-b border-black">
-                    <button className="text-[#9F0AA2] font-bold">EDIT</button>
+                    <button 
+                      onClick={() => openCheckModal(user)}
+                      className="text-[#9F0AA2] font-bold"
+                    >
+                      EDIT
+                  </button>
                   </td>
                 </tr>
               ))) : (
@@ -133,21 +151,36 @@ export default function UserManagement() {
                   </td>
                 </tr>
               )}
-              <tr>
-                <td className="p-4 border-b border-black">Sample User</td>
-                <td className="p-4 border-b border-black">MEMBER</td>
-                <td className="p-4 border-b border-black">
-                  <button className="text-[#9F0AA2] font-bold">EDIT</button>
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>
     </main>
 
-
-
-
+      {/**CHECK MODAL */}
+      {showModal && checkUserData && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-[20px] p-8 w-96 shadow-lg border-[3px] border-black">
+            <h2 className="text-2xl font-bold mb-4">Edit User</h2>
+            <p className="mb-2"><strong>Name:</strong> {checkUserData.first_name} {checkUserData.last_name}</p>
+            <p className="mb-4"><strong>Role:</strong> {checkUserData.role}</p>
+            <p className="mb-6"><strong>Date Created:</strong> {new Date(checkUserData.created_at).toLocaleDateString()}</p>
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={() => Users.memberToStaff(checkUserData.id)}
+                className="w-full px-4 py-2 bg-[#9F0AA2] text-white rounded font-bold hover:bg-[#7a0880]"
+              >
+                To Staff
+              </button>            
+              <button 
+                onClick={closeCheckModal}
+                className="w-full px-4 py-2 bg-[#9F0AA2] text-white rounded font-bold hover:bg-[#7a0880]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

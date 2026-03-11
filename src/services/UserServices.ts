@@ -37,15 +37,6 @@ export const Users = {
     },
 
     async getUserByRole (role: string) {
-
-        // First, get ALL users to debug
-        const {data: allUsers, error: allError} = await supabase
-            .from('Users')
-            .select('id, first_name, role')
-
-        console.log('ALL USERS:', allUsers);
-
-        // Now filter by role
         const {data, error} = await supabase
             .from('Users')
             .select()
@@ -59,6 +50,28 @@ export const Users = {
         }
 
         return data || []
+    },
+
+
+    async memberToStaff (userId: string) {
+        try {
+            const {error} = await supabase
+                .from('Users')
+                .update({ role: 'staff' })
+                .eq('id', userId)
+
+            if (error) {
+                console.log('Error updating user role:', error)
+                return false
+            }
+        } catch (err) {
+            console.error('Unexpected error:', err)
+        }
+
+        const results = await this.getUserByRole('staff')
+        console.log('Updated Staff List', results)
+        return true
+
     },
 
 
