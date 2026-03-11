@@ -44,10 +44,6 @@ export default function UserManagement() {
       try {
       const results = await Users.getUserByRole('member');
 
-      console.log("DEBUG: Fetched member data:", results);
-      console.log('RESULT TYPES:', typeof results)
-
-
         if (results) {
           setmemberData(Array.isArray(results) ? results : []);
         } else {
@@ -165,6 +161,12 @@ export default function UserManagement() {
             <p className="mb-4"><strong>Role:</strong> {checkUserData.role}</p>
             <p className="mb-6"><strong>Date Created:</strong> {new Date(checkUserData.created_at).toLocaleDateString()}</p>
             <div className="flex flex-col gap-4">
+              <button
+                onClick={() => Users.memberToAdmin(checkUserData.id)}
+                className="w-full px-4 py-2 bg-[#9F0AA2] text-white rounded font-bold hover:bg-[#7a0880]"
+              >
+                To Staff
+              </button> 
               <button
                 onClick={() => Users.memberToStaff(checkUserData.id)}
                 className="w-full px-4 py-2 bg-[#9F0AA2] text-white rounded font-bold hover:bg-[#7a0880]"

@@ -60,6 +60,8 @@ export const Users = {
                 .update({ role: 'staff' })
                 .eq('id', userId)
 
+            
+
             if (error) {
                 console.log('Error updating user role:', error)
                 return false
@@ -73,6 +75,32 @@ export const Users = {
         return true
 
     },
+
+    async memberToAdmin (userId: string) {
+        try {
+            const {error} = await supabase
+                .from('Users')
+                .update({ role: 'admin' })
+                .eq('id', userId)
+
+            
+
+            if (error) {
+                console.log('Error updating user role:', error)
+                return false
+            }
+        } catch (err) {
+            console.error('Unexpected error:', err)
+        }
+
+        const results = await this.getUserByRole('staff')
+        console.log('Updated Staff List', results)
+        return true
+
+    },
+
+
+    
 
 
     async createUser (newUserData: any) {

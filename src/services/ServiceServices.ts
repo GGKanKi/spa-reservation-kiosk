@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { ServiceSchema } from "./ValidationServices";
 
 
-export const ServiceServices = {
+export const Services = {
 
 
     async getServices () {
