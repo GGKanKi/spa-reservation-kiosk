@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { Services } from "../../services/ServiceServices";
+import { useState, useEffect } from "react";
 
 const navItems = [
   { label: "DASHBOARD", path: "/admin/dashboard" },
@@ -17,7 +19,53 @@ export default function ServiceManagement() {
   const navigate = useNavigate();
   const location = useLocation();
 
+
+  const [serviceData, setServiceData] = useState<any[]>([]);
+  const [checkServiceData, setCheckServiceData] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
+
+
+  const openCheckModal = (service:any) => {
+    setCheckServiceData(service);
+    setShowModal(true);
+  };
+
+  const closeCheckModal = () => {
+    setShowModal(false);
+    setCheckServiceData(null);
+  };
+
+  useEffect(() => {
+
+    const fetchServices = async () => {
+
+      try { 
+        const results = await Services.getServices();
+
+        if (results) {
+          setServiceData(Array.isArray(results) ? results : []);
+        } else {
+          setServiceData([]);
+        }
+
+      } catch (err) {
+        console.log('Error Message: ', err)
+        setServiceData([]);
+      }
+    }
+
+
+
+    fetchServices();
+
+  }, []);
+
+
+
+  
+
   return (
+  <div className="flex w-full min-h-screen">
     <aside className="w-[248px] min-w-[248px] min-h-screen flex flex-col bg-[#D1C4E9] border-r-[5px] border-[#9F0AA2] rounded-tr-[10px] rounded-br-[10px]">
       {/* Image Holder */}
       <div className="w-full h-[158px] bg-[#D9D9D9] rounded-tr-[10px] flex-shrink-0" />
@@ -62,5 +110,50 @@ export default function ServiceManagement() {
         </button>
       </div>
     </aside>
+
+
+    <main className="flex-1 p-10 bg-white">
+      <div className="bg-white border-[3px] border-black rounded-[20px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">SERVICE MANAGEMENT</h1>
+          
+          <table className="w-full border-[2px] border-black rounded-[10px] overflow-hidden">
+            <thead className="bg-[#D1C4E9]">
+              <tr>
+                <th className="p-4 border-b-2 border-black font-bold">NAME</th>
+                <th className="p-4 border-b-2 border-black font-bold">CATEGORY</th>
+                <th className="p-4 border-b-2 border-black font-bold">DESCRIPTION</th>
+                <th className="p-4 border-b-2 border-black font-bold">PRICE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {serviceData && serviceData.length > 0 ? (serviceData.map((service) => (
+                <tr key={service.id}>
+                  <td className="p-4 border-b border-black">{service.name}</td>
+                  <td className="p-4 border-b border-black">{service.category}</td>
+                  <td className="p-4 border-b border-black">{service.description}</td>
+                  <td className="p-4 border-b border-black">{service.price}</td>
+                  <td className="p-4 border-b border-black">
+                    <button 
+                      onClick={() => openCheckModal(service)}
+                      className="text-[#9F0AA2] font-bold"
+                    >
+                      EDIT
+                  </button>
+                  </td>
+                </tr>
+              ))) : (
+                <tr>
+                  <td className="p-4 border-b border-black text-center" colSpan={3}>
+                    No Services found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+    </main>
+
+
+  </div>
   );
 }

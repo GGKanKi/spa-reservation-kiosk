@@ -4,7 +4,7 @@ import { RoomSchema } from "./ValidationServices"
 
 
 
-export const RoomServices = {
+export const Rooms = {
 
     async getRooms () {
 
