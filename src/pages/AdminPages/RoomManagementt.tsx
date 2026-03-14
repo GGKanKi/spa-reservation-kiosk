@@ -112,13 +112,14 @@ export default function RoomManagement() {
 
     <main className="flex-1 p-10 bg-white">
       <div className="bg-white border-[3px] border-black rounded-[20px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">USER MANAGEMENT</h1>
+          <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">ROOM MANAGEMENT</h1>
           
           <table className="w-full border-[2px] border-black rounded-[10px] overflow-hidden">
             <thead className="bg-[#D1C4E9]">
               <tr>
                 <th className="p-4 border-b-2 border-black font-bold">NAME</th>
                 <th className="p-4 border-b-2 border-black font-bold">ASSIGNEE</th>
+                <th className="p-4 border-b-2 border-black font-bold">OCCUPIED BY</th>
                 <th className="p-4 border-b-2 border-black font-bold">AVAILABILITY</th>
               </tr>
             </thead>
@@ -127,6 +128,7 @@ export default function RoomManagement() {
                 <tr key={room.id}>
                   <td className="p-4 border-b border-black">{room.name}</td>
                   <td className="p-4 border-b border-black">{room.assigned_name}</td>
+                  <td className="p-4 border-b border-black">{null}</td>
                   <td className="p-4 border-b border-black">{room.is_available}</td>
                   <td className="p-4 border-b border-black">
                     <button 
