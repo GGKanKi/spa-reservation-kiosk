@@ -5,7 +5,7 @@ import { OrderSchema } from "./ValidationServices"
 
 
 
-export const OrderServices = {
+export const Orders = {
 
     async getOrders() {
 

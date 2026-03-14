@@ -106,7 +106,7 @@ export default function StaffManagement() {
 
         <main className="flex-1 p-10 bg-white">
           <div className="bg-white border-[3px] border-black rounded-[20px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">USER MANAGEMENT</h1>
+              <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">STAFF MANAGEMENT</h1>
               
               <table className="w-full border-[2px] border-black rounded-[10px] overflow-hidden">
                 <thead className="bg-[#D1C4E9]">

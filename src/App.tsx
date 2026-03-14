@@ -15,6 +15,7 @@ import StaffManagement from './pages/AdminPages/StaffManagement';
 import ServiceManagement from './pages/AdminPages/ServiceManagement';
 import RoomManagement from './pages/AdminPages/RoomManagementt';
 import Reservation from './pages/AdminPages/Reservation';
+import OrderList from './pages/AdminPages/Order';
 import PaymentList from './pages/AdminPages/Payment';
 import ReportList from './pages/AdminPages/Report';
 import Settings from './pages/AdminPages/Setting';
@@ -43,6 +44,7 @@ function App() {
         <Route path="/admin/staff-management" element={<StaffManagement />} />
         <Route path="/admin/service-management" element={<ServiceManagement />} />
         <Route path="/admin/room-management" element={<RoomManagement />} />
+        <Route path="/admin/orders" element={<OrderList />} />
         <Route path="/admin/reservations" element={<Reservation />} />
         <Route path="/admin/payments" element={<PaymentList />} />
         <Route path="/admin/reports" element={<ReportList />} />

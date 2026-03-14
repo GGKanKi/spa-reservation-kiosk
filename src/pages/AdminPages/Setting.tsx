@@ -1,5 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { AuthServices } from "../../services/AuthServices";
+import { supabase } from "../../lib/supabase";
+
+
+type UserProfile = Awaited<ReturnType<typeof AuthServices.getUserProfile>>;
 
 const navItems = [
   { label: "DASHBOARD", path: "/admin/dashboard" },
@@ -16,6 +22,80 @@ const navItems = [
 export default function Settings() {
   const navigate = useNavigate();
   const location = useLocation();
+
+
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userProfileData, setUserProfileData] = useState<any[]>([]);
+  const [successChange, setSuccessChange] = useState(false);
+  const [failedChange, setFailedChange] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+
+  const showSuccessUpdate = async (data:any) => {
+    setSuccessChange(true)
+    setUserProfileData(data)
+  };
+
+  const closeSuccessUpdate = async () => {
+    setSuccessChange(false)
+  };
+
+  const showFailedUpdate = async () => {
+    setFailedChange(true)
+  }; 
+
+  const closeFailedUpdate = async () => {
+    setFailedChange(false)
+  };
+
+
+  // Get Id before Other Functions
+  useEffect(() => {
+    const getCurrentUser = async () => {
+    const {data: {user} } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id)
+      }
+
+    };
+    getCurrentUser();
+  }, []);
+
+  useEffect(() => {
+
+    if (!userId) return;
+
+
+    const fetchProfileData = async () => {
+
+
+      try {
+        setLoading(true);
+        const results = await AuthServices.getUserProfile(userId);
+
+        if (results.error) {
+          showFailedUpdate()
+          console.error('Error:', results.error);
+        } else {
+          setUserProfileData(results.data)
+        }
+
+
+      } catch (err) {
+        console.error('Error Message', err)
+        showFailedUpdate();
+      } finally {
+        setLoading(false)
+      }
+
+
+    }
+
+    fetchProfileData()
+
+  }, [userId]);
+
+  if (loading) return <div>Loading...</div>;  
 
   return (
     <aside className="w-[248px] min-w-[248px] min-h-screen flex flex-col bg-[#D1C4E9] border-r-[5px] border-[#9F0AA2] rounded-tr-[10px] rounded-br-[10px]">
