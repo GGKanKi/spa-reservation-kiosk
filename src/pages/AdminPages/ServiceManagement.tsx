@@ -5,10 +5,10 @@ import { useState, useEffect } from "react";
 
 const navItems = [
   { label: "DASHBOARD", path: "/admin/dashboard" },
-  { label: "USER MANAGEMENT", path: "/admin/user-management" },
-  { label: "STAFF MANAGEMENT", path: "/admin/staff-management" },
-  { label: "SERVICE MANAGEMENT", path: "/admin/service-management" },
-  { label: "ROOM MANAGEMENT", path: "/admin/room-management" },
+  { label: "USERS", path: "/admin/user-management" },
+  { label: "STAFFS", path: "/admin/staff-management" },
+  { label: "SERVICES", path: "/admin/service-management" },
+  { label: "ROOMS", path: "/admin/room-management" },
   { label: "ORDERS", path: "/admin/orders" },
   { label: "PAYMENTS", path: "/admin/payments" },
   { label: "REPORTS", path: "/admin/reports" },
@@ -60,9 +60,6 @@ export default function ServiceManagement() {
 
   }, []);
 
-
-
-  
 
   return (
   <div className="flex w-full min-h-screen">

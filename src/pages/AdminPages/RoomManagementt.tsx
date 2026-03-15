@@ -3,13 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Rooms } from "../../services/RoomService";
 
-
 const navItems = [
   { label: "DASHBOARD", path: "/admin/dashboard" },
-  { label: "USER MANAGEMENT", path: "/admin/user-management" },
-  { label: "STAFF MANAGEMENT", path: "/admin/staff-management" },
-  { label: "SERVICE MANAGEMENT", path: "/admin/service-management" },
-  { label: "ROOM MANAGEMENT", path: "/admin/room-management" },
+  { label: "USERS", path: "/admin/user-management" },
+  { label: "STAFFS", path: "/admin/staff-management" },
+  { label: "SERVICES", path: "/admin/service-management" },
+  { label: "ROOMS", path: "/admin/room-management" },
   { label: "ORDERS", path: "/admin/orders" },
   { label: "PAYMENTS", path: "/admin/payments" },
   { label: "REPORTS", path: "/admin/reports" },
@@ -128,7 +127,8 @@ export default function RoomManagement() {
                 <tr key={room.id}>
                   <td className="p-4 border-b border-black">{room.name}</td>
                   <td className="p-4 border-b border-black">{room.assigned_name}</td>
-                  <td className="p-4 border-b border-black">{null}</td>
+                  {/**To be Updated With Connected User */}
+                  <td className="p-4 border-b border-black">{null}</td> 
                   <td className="p-4 border-b border-black">{room.is_available}</td>
                   <td className="p-4 border-b border-black">
                     <button 
