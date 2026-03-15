@@ -1,6 +1,8 @@
 // ==== Imports ====
 import { supabase } from "../lib/supabase";
 import { UserSchema } from "./ValidationServices";
+import { AuthServices } from "./AuthServices";
+import { id } from "zod/locales";
 
 
 export const Users = {
@@ -135,7 +137,57 @@ export const Users = {
 
         return data
 
-    }
+    },
 
+    async getUserProfile(userId: string) {
+        try {
+            const { data, error } = await supabase
+                .from('Users')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (error) {
+                return { data: null, error: error.message };
+            }
+
+            return { data, error: null };
+        } catch (error: any) {
+            return { data: null, error: error.message || 'Failed to fetch user profile.' };
+        }
+    },
+
+
+
+
+    async updateUser(userId: string, updateData: {
+        first_name?: string,
+        middle_name?: string,
+        last_name?: string,
+        email?: string,
+        phone_num?: string,
+        password?: string,
+
+    }) {
+        try {
+            const {data, error} = await supabase
+                .from('Users')
+                .update(updateData)
+                .eq('id', userId)
+                .select()
+                .single()
+
+            if (error) {
+                return { data: null, error: error.message };
+            } 
+
+            return {data, error: null};
+
+        } catch (err: any) {
+            return { data: null, error: err.message || 'Failed To Update Data.'}
+        }
+
+
+    } 
 
 };
