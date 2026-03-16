@@ -6,6 +6,7 @@ const navItems = [
   { label: "BOOK-A-SERVICE", path: "/book-a-service" },
   { label: "RESERVATIONS", path: "/reservations" },
   { label: "ORDERS", path: "/orders" },
+  { label: "SETTINGS", path: "/member-settings"}
 ];
 
 export default function MemberBooking() {

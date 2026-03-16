@@ -8,6 +8,7 @@ const navItems = [
   { label: "CLIENT LIST", path: "/staff/client-list" },
   { label: "SCHEDULE", path: "/staff/schedule" },
   { label: "TRANSACTIONS", path: "/staff/transactions" },
+  { label: "SETTINGS", path: "/staff-settings"}
 ];
 
 export default function StaffDashboard() {
