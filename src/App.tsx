@@ -19,7 +19,8 @@ import OrderList from './pages/AdminPages/Order';
 import PaymentList from './pages/AdminPages/Payment';
 import ReportList from './pages/AdminPages/Report';
 import Settings from './pages/AdminPages/Setting';
-
+import MemberSettings from './pages/MemberPages/Settings';
+import StaffSettings from './pages/StaffPages/Settings';
 
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         <Route path="/book-a-service" element={<MemberBooking />} />
         <Route path="/reservations" element={<MemberReservations />} />
         <Route path="/orders" element={<MemberOrders />} />
+        <Route path="/member-settings" element={<MemberSettings /> } />
 
         {/* ADMIN PAGES */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -55,6 +57,9 @@ function App() {
         <Route path="/staff/client-list" element={<ClientList />} />
         <Route path="/staff/schedule" element={<Schedule />} />
         <Route path="/staff/transactions" element={<Transaction />} />
+        <Route path="/staff-settings" element={<StaffSettings /> } />
+
+
         <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
