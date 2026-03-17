@@ -1,8 +1,6 @@
 // ==== Imports ====
 import { supabase } from "../lib/supabase";
 import { UserSchema } from "./ValidationServices";
-import { AuthServices } from "./AuthServices";
-import { id } from "zod/locales";
 
 
 export const Users = {
@@ -52,6 +50,24 @@ export const Users = {
         }
 
         return data || []
+    },
+
+    // Room Details For Staff
+    async staffClients (userId: string) {
+        const {data, error} = await supabase
+            .from('Users')
+            .select()
+            .eq('assigned_id', userId)
+
+        console.log("Query Result: ", data, error)
+
+        if (error) {
+            console.log('Error: ', error)
+            return []
+        } 
+
+        return data || []
+
     },
 
 
