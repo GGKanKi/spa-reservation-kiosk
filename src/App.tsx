@@ -8,7 +8,6 @@ import MemberOrders from './pages/MemberPages/Order';
 import AdminDashboard from './pages/AdminPages/Dashboard';
 import StaffDashboard from './pages/StaffPages/Dashboard';
 import Schedule from './pages/StaffPages/Schedule';
-import ClientList from './pages/StaffPages/Clientlist';
 import Transaction from './pages/StaffPages/Transactions';
 import UserManagement from './pages/AdminPages/UserManagement';
 import StaffManagement from './pages/AdminPages/StaffManagement';
@@ -54,7 +53,6 @@ function App() {
 
         {/* STAFF PAGES */}
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
-        <Route path="/staff/client-list" element={<ClientList />} />
         <Route path="/staff/schedule" element={<Schedule />} />
         <Route path="/staff/transactions" element={<Transaction />} />
         <Route path="/staff-settings" element={<StaffSettings /> } />
