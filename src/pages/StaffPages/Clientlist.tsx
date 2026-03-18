@@ -6,7 +6,6 @@ import { supabase } from "../../lib/supabase";
 
 const navItems = [
   { label: "DASHBOARD", path: "/staff/dashboard" },
-  { label: "CLIENT LIST", path: "/staff/client-list" },
   { label: "SCHEDULE", path: "/staff/schedule" },
   { label: "TRANSACTIONS", path: "/staff/transactions" },
   { label: "SETTINGS", path: "/staff-settings"}
@@ -16,13 +15,11 @@ export default function ClientList() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ MOVE ALL STATES INSIDE COMPONENT
   const [userId, setUserId] = useState<string | null>(null);
   const [assignedRoom, setAssignedRoom] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // ✅ MOVE FUNCTIONS INSIDE COMPONENT
   const openCheckModal = (room: any) => {
     setShowModal(true);
   };
