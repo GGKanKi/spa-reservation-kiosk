@@ -5,6 +5,7 @@ const navItems = [
   { label: "DASHBOARD", path: "/staff/dashboard" },
   { label: "SCHEDULE", path: "/staff/schedule" },
   { label: "TRANSACTIONS", path: "/staff/transactions" },
+  { label: "SETTINGS", path: "/staff-settings"}
 ];
 
 export default function Transaction() {
