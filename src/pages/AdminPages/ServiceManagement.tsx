@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Services } from "../../services/ServiceServices";
 import { useState, useEffect } from "react";
+import { supabase } from "../../lib/supabase";
 
 const navItems = [
   { label: "DASHBOARD", path: "/admin/dashboard" },
@@ -89,25 +90,23 @@ export default function ServiceManagement() {
         })}
       </nav>
 
-      {/* Spacer */}
-      <div className="flex-1" />
+        <div className="flex-1" />
 
-      {/* Logout Button */}
-      <div className="px-[20px] pb-[28px]">
-        <button
-        onClick={() => navigate("/login")}
-          className="w-full h-[56px] flex items-center justify-center
-            rounded-[10px] border-[3px] border-black bg-[#D9D9D9]
-            font-['Konkhmer_Sleokchher'] text-[20px] text-black leading-[120%]
-            [text-shadow:0_4px_4px_rgba(0,0,0,0.75)] [-webkit-text-stroke:1px_#FFF]
-            hover:bg-[#c8b8e8] transition-colors duration-150"
-          style={{ WebkitTextStrokeColor: "#FFF", WebkitTextStrokeWidth: "1px" }}
-        >
-          LOGOUT
-        </button>
-      </div>
-    </aside>
-
+        <div className="px-[20px] pb-[28px]">
+          <button
+            onClick={() => {
+              supabase.auth.signOut();
+              navigate("/login");
+            }}
+            className="w-full h-[56px] flex items-center justify-center
+              rounded-[10px] border-[3px] border-black bg-[#FF6B6B] hover:bg-[#EE5A52]
+              font-['Konkhmer_Sleokchher'] text-[20px] text-white leading-[120%]
+              transition-colors duration-150"
+          >
+            LOGOUT
+          </button>
+        </div>
+      </aside>
 
     <main className="flex-1 p-10 bg-white">
       <div className="bg-white border-[3px] border-black rounded-[20px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">

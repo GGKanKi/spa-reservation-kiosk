@@ -19,6 +19,26 @@ export const ReservationServices = {
         return data
     },
 
+
+    // Room Details For Staff
+    async staffClients (userId: string) {
+        const {data, error} = await supabase
+            .from('Reservation')
+            .select()
+            .eq('staff_id', userId)
+            
+
+        console.log("Query Result: ", data, error)
+
+        if (error) {
+            console.log('Error: ', error)
+            return []
+        } 
+
+        return data || []
+
+    },
+
     async selectReservation (reservationId: string) {
 
         const {data, error} = await supabase

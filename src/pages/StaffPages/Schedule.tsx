@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Users } from "../../services/UserServices";
+import { ReservationServices } from "../../services/ReservationSerivces";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 
@@ -15,13 +16,12 @@ export default function ClientList() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ MOVE ALL STATES INSIDE COMPONENT
   const [userId, setUserId] = useState<string | null>(null);
   const [assignedRoom, setAssignedRoom] = useState<any[]>([]);
+  const [clientNames, setClientNames] = useState<Record<string, string>>({});
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // ✅ MOVE FUNCTIONS INSIDE COMPONENT
   const openCheckModal = (room: any) => {
     setShowModal(true);
   };
@@ -30,7 +30,6 @@ export default function ClientList() {
     setShowModal(false);
   };
 
-  // ✅ MOVE useEffect INSIDE COMPONENT
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -41,17 +40,34 @@ export default function ClientList() {
     getCurrentUser();
   }, []);
 
-  // ✅ SEPARATE useEffect for fetching rooms
   useEffect(() => {
     if (!userId) return;
 
     const fetchRoomAssigned = async () => {
       try {
         setLoading(true);
-        const results = await Users.staffClients(userId);
+        const results = await ReservationServices.staffClients(userId);
+        setAssignedRoom(results || []);
 
         if (results) {
           setAssignedRoom(Array.isArray(results) ? results : []);
+          
+          results.forEach(async (res) => {
+            try{
+              const profile = await Users.getUserProfile(res.client_id);
+
+              // Check user name if valid
+              const name = profile.data?.first_name || "Unknown Client";
+              setClientNames(prev => ({
+                    ...prev,
+                    [res.client_id]: name
+                  }));
+            } catch (err)
+            {
+              console.error("Failed to fetch name for", res.client_id);
+            }
+          });
+
         } else {
           setAssignedRoom([]);
         }
@@ -62,6 +78,7 @@ export default function ClientList() {
         setLoading(false);
       }
     };
+
 
     fetchRoomAssigned();
   }, [userId]);
@@ -120,7 +137,7 @@ export default function ClientList() {
             <thead className="bg-[#D1C4E9]">
               <tr>
                 <th className="p-4 border-b-2 border-black font-bold">NAME</th>
-                <th className="p-4 border-b-2 border-black font-bold">ROLE</th>
+                <th className="p-4 border-b-2 border-black font-bold">CLIENT NAME</th>
                 <th className="p-4 border-b-2 border-black font-bold">ACTIONS</th>
               </tr>
             </thead>
@@ -129,7 +146,7 @@ export default function ClientList() {
                 assignedRoom.map((room) => (
                   <tr key={room.id}>
                     <td className="p-4 border-b border-black">{room.name}</td>
-                    <td className="p-4 border-b border-black">{room.role}</td>
+                    <td className="p-4 border-b border-black">{clientNames[room.client_id] || "Fetching name..."}</td>
                     <td className="p-4 border-b border-black">
                       <button 
                         onClick={() => openCheckModal(room)}
