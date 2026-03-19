@@ -52,23 +52,9 @@ export const Users = {
         return data || []
     },
 
-    // Room Details For Staff
-    async staffClients (userId: string) {
-        const {data, error} = await supabase
-            .from('Users')
-            .select()
-            .eq('assigned_id', userId)
 
-        console.log("Query Result: ", data, error)
 
-        if (error) {
-            console.log('Error: ', error)
-            return []
-        } 
-
-        return data || []
-
-    },
+    // Client Name Fetch For Reservations
 
 
     async memberToStaff (userId: string) {
@@ -119,8 +105,6 @@ export const Users = {
 
 
     
-
-
     async createUser (newUserData: any) {
 
         // Uses Zod Validation
@@ -172,9 +156,6 @@ export const Users = {
             return { data: null, error: error.message || 'Failed to fetch user profile.' };
         }
     },
-
-
-
 
     async updateUser(userId: string, updateData: {
         first_name?: string,
