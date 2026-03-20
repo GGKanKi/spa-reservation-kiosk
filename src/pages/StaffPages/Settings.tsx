@@ -224,14 +224,14 @@ export default function StaffSettings() {
           {/* Success Message */}
           {successChange && (
             <div className="mb-6 p-4 bg-[#D4EDDA] border-2 border-[#28A745] rounded-[10px] text-[#155724] font-['Konkhmer_Sleokchher']">
-              ✅ Changes saved successfully!
+              Changes saved successfully!
             </div>
           )}
 
           {/* Error Message */}
           {(failedChange || errorMessage) && (
             <div className="mb-6 p-4 bg-[#F8D7DA] border-2 border-[#F5C6CB] rounded-[10px] text-[#721C24] font-['Konkhmer_Sleokchher']">
-              ❌ {errorMessage || "Failed to save changes"}
+             {errorMessage || "Failed to save changes"}
             </div>
           )}
 

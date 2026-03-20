@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
 
 const navItems = [
   { label: "DASHBOARD", path: "/member/dashboard" },
@@ -40,19 +41,18 @@ export default function MemberBooking() {
         })}
       </nav>
 
-      {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Logout Button */}
       <div className="px-[20px] pb-[28px]">
         <button
-        onClick={() => navigate("/login")}
+          onClick={() => {
+            supabase.auth.signOut();
+            navigate("/login");
+          }}
           className="w-full h-[56px] flex items-center justify-center
-            rounded-[10px] border-[3px] border-black bg-[#D9D9D9]
-            font-['Konkhmer_Sleokchher'] text-[20px] text-black leading-[120%]
-            [text-shadow:0_4px_4px_rgba(0,0,0,0.75)] [-webkit-text-stroke:1px_#FFF]
-            hover:bg-[#c8b8e8] transition-colors duration-150"
-          style={{ WebkitTextStrokeColor: "#FFF", WebkitTextStrokeWidth: "1px" }}
+            rounded-[10px] border-[3px] border-black bg-[#FF6B6B] hover:bg-[#EE5A52]
+            font-['Konkhmer_Sleokchher'] text-[20px] text-white leading-[120%]
+            transition-colors duration-150"
         >
           LOGOUT
         </button>
