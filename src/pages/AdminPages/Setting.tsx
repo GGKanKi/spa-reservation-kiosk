@@ -37,6 +37,7 @@ export default function Settings() {
     last_name: "",
     email: "",
     phone_num: "",
+    password: "",
   });
 
   useEffect(() => {
@@ -57,12 +58,23 @@ export default function Settings() {
 
     try {
       setLoading(true);
-      const result = await Users.updateUser(userId, {
+      const updatePayload: any = {
         first_name: formData.first_name,
         middle_name: formData.middle_name,
         last_name: formData.last_name,
         phone_num: formData.phone_num,
-      });
+      };
+
+       if (formData.password && formData.password.length >= 6) {
+        updatePayload.password = formData.password;
+      } else if (formData.password && formData.password.length < 6) {
+        setErrorMessage("Password must be at least 6 characters");
+        setFailedChange(true);
+        setLoading(false);
+        return;
+      }
+
+      const result = await Users.updateUser(userId, updatePayload)
 
       if (result.error) {
         setErrorMessage(result.error);
@@ -99,6 +111,7 @@ export default function Settings() {
         last_name: userProfileData.last_name || "",
         email: userProfileData.email || "",
         phone_num: userProfileData.phone_num || "",
+        password: "",
       });
     }
   };
@@ -122,6 +135,7 @@ export default function Settings() {
             last_name: results.data?.last_name || "",
             email: results.data?.email || "",
             phone_num: results.data?.phone_num || "",
+            password: "",
           });
         }
       } catch (err) {
@@ -328,7 +342,27 @@ export default function Settings() {
                     }`}
                   />
                 </div>
-              </div>
+
+                {/* Password */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-3">
+                    Change Password (Leave blank to keep current)
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    disabled={!editing}
+                    placeholder="Enter new password..."
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
+                      editing
+                        ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                        : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
+                    }`}
+                  />
+                </div>
+                              </div>
 
               {/* Action Buttons */}
               <div className="flex gap-4 justify-end pt-6 border-t border-slate-700">

@@ -28,15 +28,15 @@ export default function ResetPassword() {
     setErrorMsg("");
 
     try {
-      // THE BUILT-IN MAGIC: Supabase uses the token from the URL automatically
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
 
       if (error) throw error;
 
+      await supabase.auth.signOut();
+
       setSuccess(true);
-      // Give the user 3 seconds to read the success message before redirecting
       setTimeout(() => navigate("/login"), 3000);
 
     } catch (err: any) {
