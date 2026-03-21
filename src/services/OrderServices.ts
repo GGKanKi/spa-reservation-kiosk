@@ -11,31 +11,37 @@ export const Orders = {
 
         const {data, error} = await supabase
             .from('Order')
-            .select('*')
+            .select(`
+                    *,
+                    Service(name, category, price, description)
+                    `)
 
         if (error) {
             console.error('Error Message: ', error)
+            return {error: error.message}
         }
 
-        return data
+        return {data, error: null }
         
     },
 
 
     async selectOrder(orderId: string) {
+    const {data, error} = await supabase
+        .from('Order')
+        .select(`
+        *,
+        Service(name, category, price, description)
+        `)
+        .eq('id', orderId)
+        .single()
 
-        const {data, error} = await supabase
-            .from('Order')
-            .select()
-            .eq('id', orderId)
-            .single()
+    if (error) {
+        console.error('Error Message: ', error)
+        return { error: error.message }  // ✅ Return error properly
+    }
 
-        if (error) {
-            console.log('Error Message: ', error)
-        }
-
-        return data
-
+    return {data, error: null }
     },
 
 
@@ -55,10 +61,10 @@ export const Orders = {
                 {
                     // Database Match = Frontend Data Fetching
                     name: validation.data.orderName, 
-                    client_id: Number(validation.data.clientId),   
-                    service_id: Number(validation.data.serviceId), 
-                    staff_id: Number(validation.data.staffId),     
-                    room_id: Number(validation.data.roomId),       
+                    client_id: validation.data.clientId,   
+                    service_id: validation.data.serviceId, 
+                    staff_id: validation.data.staffId,     
+                    room_id: validation.data.roomId,       
                     order_status: validation.data.orderStatus, // Status Enum
                 }
             ])
@@ -66,9 +72,10 @@ export const Orders = {
 
         if (error) {
             console.error('Error Message: ', error)
+            return {error: error.message}
         }
 
-        return data
+        return {data, error: null }
 
     } 
 

@@ -3,18 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Orders } from "../../services/OrderServices";
 import { supabase } from "../../lib/supabase";
+import { Users as UsersIcon, Search, Edit, Trash2, Shield, UserCheck, X, Plus } from "lucide-react";
 
 
 const navItems = [
-  { label: "DASHBOARD", path: "/admin/dashboard" },
-  { label: "USERS", path: "/admin/user-management" },
-  { label: "STAFFS", path: "/admin/staff-management" },
-  { label: "SERVICES", path: "/admin/service-management" },
-  { label: "ROOMS", path: "/admin/room-management" },
-  { label: "ORDERS", path: "/admin/orders" },
-  { label: "PAYMENTS", path: "/admin/payments" },
-  { label: "REPORTS", path: "/admin/reports" },
-  { label: "SETTINGS", path: "/admin/settings" },
+  { label: "DASHBOARD", path: "/admin/dashboard", icon: "📊" },
+  { label: "USERS", path: "/admin/user-management", icon: "👥" },
+  { label: "STAFFS", path: "/admin/staff-management", icon: "👔" },
+  { label: "SERVICES", path: "/admin/service-management", icon: "🔧" },
+  { label: "ROOMS", path: "/admin/room-management", icon: "🏠" },
+  { label: "ORDERS", path: "/admin/orders", icon: "📦" },
+  { label: "PAYMENTS", path: "/admin/payments", icon: "💳" },
+  { label: "REPORTS", path: "/admin/reports", icon: "📈" },
+  { label: "SETTINGS", path: "/admin/settings", icon: "⚙️" },
 ];
 
 export default function OrderList() {
@@ -25,15 +26,17 @@ export default function OrderList() {
   const [orderData, setOrderData] = useState<any[]>([]);
   const [checkOrderData, setCheckOrderData] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const openCheckModal = async (order:any) => {
-    setCheckOrderData(true);
-    setOrderData(order)
+    setCheckOrderData(order);
+    setShowModal(true)
   };
 
   const closeCheckModal = async () => {
-    setOrderData([]);
-    setCheckOrderData(false)
+    setShowModal(false);
+    setCheckOrderData(null)
   };
 
   useEffect(() => {
@@ -43,110 +46,251 @@ export default function OrderList() {
       try {
         const results = await Orders.getOrders()
 
-        if (results) {
-          setOrderData(Array.isArray(results) ? results : []);
-        } else {
+        if (results.error) {
+          console.error(results.error)
           setOrderData([]);
+        } else {
+          setOrderData(Array.isArray(results.data) ? results.data : []);
         }
       } catch (err) {
         console.log('Error Message', err)
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchOrders()
 
-    
   },[]);
+
+  const filteredOrder = orderData.filter(order =>
+    `${order.name}`.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
 
   return (
-    <div className="flex w-full min-h-screen">
-      <aside className="w-[248px] min-w-[248px] min-h-screen flex flex-col bg-[#D1C4E9] border-r-[5px] border-[#9F0AA2] rounded-tr-[10px] rounded-br-[10px]">
-        {/* Image Holder */}
-        <div className="w-full h-[158px] bg-[#D9D9D9] rounded-tr-[10px] flex-shrink-0" />
+    <div className="flex w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Sidebar */}
+      <aside className="w-[280px] min-w-[280px] min-h-screen flex flex-col bg-slate-950 border-r-2 border-purple-500/20 shadow-2xl">
+        <div className="p-6 border-b border-purple-500/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <UsersIcon size={24} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-white font-bold text-lg">Admin Panel</h1>
+              <p className="text-purple-400 text-xs">SPA Management</p>
+            </div>
+          </div>
+        </div>
 
-        {/* Nav Buttons */}
-        <nav className="flex flex-col gap-[18px] mt-[136px] px-[20px]">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`
-                  w-full h-[56px] flex items-center justify-center
-                  rounded-[10px] border-[3px] border-black
-                  font-['Konkhmer_Sleokchher'] text-[20px] text-black leading-[120%]
-                  transition-colors duration-150
-                  ${isActive ? "bg-[#9F0AA2] text-white border-[#9F0AA2]" : "bg-[#D9D9D9] hover:bg-[#c8b8e8]"}
-                `}
+                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                    : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
+                }`}
               >
-                {item.label}
+                <span className="text-lg">{item.icon}</span>
+                <span className="font-medium text-sm">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="flex-1" />
-
-        <div className="px-[20px] pb-[28px]">
+        <div className="p-4 border-t border-purple-500/10">
           <button
             onClick={() => {
               supabase.auth.signOut();
               navigate("/login");
             }}
-            className="w-full h-[56px] flex items-center justify-center
-              rounded-[10px] border-[3px] border-black bg-[#FF6B6B] hover:bg-[#EE5A52]
-              font-['Konkhmer_Sleokchher'] text-[20px] text-white leading-[120%]
-              transition-colors duration-150"
+            className="w-full h-[48px] flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
           >
+            <X size={18} />
             LOGOUT
           </button>
         </div>
       </aside>
 
-
-          <main className="flex-1 p-10 bg-white">
-        <div className="bg-white border-[3px] border-black rounded-[20px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">ORDER MANAGEMENT</h1>
-            
-            <table className="w-full border-[2px] border-black rounded-[10px] overflow-hidden">
-              <thead className="bg-[#D1C4E9]">
-                <tr>
-                  <th className="p-4 border-b-2 border-black font-bold">NAME</th>
-                  <th className="p-4 border-b-2 border-black font-bold">CLIENT NAME/ ID</th>
-                  <th className="p-4 border-b-2 border-black font-bold">STAFF NAME/ ID</th>
-                  <th className="p-4 border-b-2 border-black font-bold">SERVICES</th>                  
-                  <th className="p-4 border-b-2 border-black font-bold">ROOM ID</th>
-                  <th className="p-4 border-b-2 border-black font-bold">ORDER STATUS</th>                
-                </tr>
-              </thead>
-              <tbody>
-                {orderData && orderData.length > 0 ? (orderData.map((order) => (
-                  <tr key={order.id}>
-                    <td className="p-4 border-b border-black">{order.name}</td>
-                    <td className="p-4 border-b border-black">{order.assigned_name}</td>
-                    <td className="p-4 border-b border-black">{order.is_available}</td>
-                    <td className="p-4 border-b border-black">
-                      <button 
-                        onClick={() => openCheckModal(order)}
-                        className="text-[#9F0AA2] font-bold"
-                      >
-                        EDIT
-                    </button>
-                    </td>
-                  </tr>
-                ))) : (
-                  <tr>
-                    <td className="p-4 border-b border-black text-center" colSpan={3}>
-                      No orders found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+              📦 Orders Management
+            </h1>
+            <p className="text-slate-400">Manage and control all orders in the system</p>
           </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-medium">Total Orders</p>
+                  <p className="text-3xl font-bold text-white mt-2">{orderData.length}</p>
+                </div>
+                <span className="text-4xl">📦</span>
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-medium">Pending Orders</p>
+                  <p className="text-3xl font-bold text-white mt-2">{orderData.filter(o => o.order_status === 'pending').length}</p>
+                </div>
+                <span className="text-4xl">✅</span>
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-medium">Total Revenue</p>
+                  <p className="text-3xl font-bold text-white mt-2">₱{orderData.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0).toFixed(2)}</p>
+                </div>
+                <span className="text-4xl">💰</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filter */}
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl mb-8">
+            <div className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-4 py-3 border border-slate-700">
+              <Search size={20} className="text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search orders by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 bg-transparent outline-none text-white placeholder-slate-500"
+              />
+            </div>
+          </div>
+
+          {/* Services Table */}
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg border border-purple-500/20 shadow-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-b border-purple-500/20">
+                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">NAME</th>
+                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">CATEGORY</th>
+                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">PRICE</th>
+                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">DESCRIPTION</th>
+                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                        <div className="flex justify-center">
+                          <div className="animate-spin">⚙️</div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredOrder.length > 0 ? (
+                    filteredOrder.map((order, idx) => (
+                      <tr
+                        key={order.id}
+                        className={`border-b border-slate-700/50 hover:bg-slate-700/30 transition-all duration-200 ${
+                          idx % 2 === 0 ? "bg-slate-800/20" : "bg-slate-800/40"
+                        }`}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                              {order.name[0] || '?'}
+                            </div>
+                            <p className="text-white font-medium">{order.name}</p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300">
+                            {order.Service?.category || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-white font-semibold">₱{parseFloat(order.Service?.price || '0').toFixed(2)}</td>
+                        <td className="px-6 py-4 text-slate-400 text-sm max-w-xs truncate">{order.Service?.description || 'N/A'}</td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => openCheckModal(order)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium"
+                          >
+                            <Edit size={16} />
+                            EDIT
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                        No Orders found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </main>
-      </div>
+
+      {/* Edit Modal */}
+      {showModal && checkOrderData && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-md border border-purple-500/30 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Edit size={24} className="text-purple-400" />
+                Order Details
+              </h2>
+              <button
+                onClick={closeCheckModal}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
+                <p className="text-slate-400 text-sm">Name</p>
+                <p className="text-white font-semibold text-lg">{checkOrderData.name}</p>
+              </div>
+              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
+                <p className="text-slate-400 text-sm">Category</p>
+                <p className="text-white font-semibold text-lg">{checkOrderData.category}</p>
+              </div>
+              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
+                <p className="text-slate-400 text-sm">Price</p>
+                <p className="text-white font-semibold text-lg">₱{parseFloat(checkOrderData.price).toFixed(2)}</p>
+              </div>
+              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
+                <p className="text-slate-400 text-sm">Description</p>
+                <p className="text-white font-semibold text-lg">{checkOrderData.description}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={closeCheckModal}
+                className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 transition-all duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
     );
   }

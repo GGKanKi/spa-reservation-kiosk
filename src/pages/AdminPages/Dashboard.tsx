@@ -141,11 +141,15 @@ export default function AdminDashboard() {
                 ⚡ Quick Actions
               </h3>
               <div className="flex flex-col gap-3">
-                <button className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-between">
+                <button 
+                  onClick={() => navigate("/admin/orders")}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-between">
                   View All Orders
                   <ArrowRight size={18} />
                 </button>
-                <button className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 flex items-center justify-between">
+                <button 
+                  onClick={() => navigate("/admin/user-management")}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 flex items-center justify-between">
                   Manage Users
                   <ArrowRight size={18} />
                 </button>
