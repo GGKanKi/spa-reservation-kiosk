@@ -1,3 +1,4 @@
+import { success } from "zod";
 import { supabase } from "../lib/supabase";
 
 export const AuthServices = {
@@ -77,6 +78,36 @@ export const AuthServices = {
         } catch (error: any) {
             console.error('Signup exception:', error);
             return { data: null, error: error.message || 'An unexpected error occurred.' };
+        }
+    },
+
+
+    async forgotPassword(userEmail: string) {
+
+        const { data: userRecord, error: fetchError } = await supabase
+            .from('Users')
+            .select('id')
+            .eq('email_add', userEmail)
+            .single();
+
+        if (userRecord) {
+            try {
+                const {data, error} = await supabase.auth.resetPasswordForEmail(userEmail, {
+                redirectTo: 'http://localhost:5173/reset-password', 
+            });
+
+                if (error) throw error;
+
+                return{ success: true, data};
+
+            } catch (err:any) {
+                console.error('Error Message: ', err.message);
+                return { success: false, error: err.message };
+            }
+            
+        } else {
+            console.error('Email Invalid: Not found in Users table');
+            return { success: false, error: "This email is not registered.", fetchError};
         }
     },
 

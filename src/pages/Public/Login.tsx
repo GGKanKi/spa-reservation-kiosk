@@ -166,14 +166,13 @@ export default function LoginPage() {
             </button>
 
             {/* Forgot Password */}
-            <a
-              href="#"
+            <Link
+              to="/forgot-password"
               className="text-[#1E1E1E] text-base font-normal leading-[140%] underline underline-offset-auto"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               Forgot password?
-            </a>
-
+            </Link>
             {/* Sign Up */}
             <p
               className="text-[#1E1E1E] text-base font-normal leading-[140%]"

@@ -148,7 +148,9 @@ export default function RoomManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-400 text-sm font-medium">Active Rooms</p>
-                    {roomData.filter(r => r.is_available === true).length}
+                    <p className="text-3xl font-bold text-white mt-2">
+                      {roomData.filter(r => r.is_available === true).length}
+                    </p>
                 </div>
                 <span className="text-4xl">✅</span>
               </div>
@@ -159,7 +161,7 @@ export default function RoomManagement() {
                   <p className="text-slate-400 text-sm font-medium">Occupied Room</p>
                   {roomData.filter(r => r.is_available === false).length}
                 </div>
-                <span className="text-4xl">💰</span>
+                <span className="text-4xl">⏳</span>
               </div>
             </div>
           </div>
@@ -282,7 +284,7 @@ export default function RoomManagement() {
                 <p className="text-slate-400 text-sm">Staff Name</p>
                 <p className="text-white font-semibold text-lg">{checkRoomData.assigned_name || 'N/A'}</p>
               </div>
-                <div className="bg-slate-700/30...">
+               <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
                   <p className="text-slate-400...">Availability</p>
                   <p className="text-white font-semibold text-lg">
                     {checkRoomData.is_available === true ? '✅ Available' : '🚫 Occupied'}
