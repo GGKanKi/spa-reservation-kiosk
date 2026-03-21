@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/Public/Login';
 import SignupPage from './pages/Public/Signup';
+import ForgotPassword from './pages/Public/ForgotPassword';
+import ResetPassword from './pages/Public/ResetPassword';
 import MemberDashboard from './pages/MemberPages/Dashboard';
 import MemberBooking from './pages/MemberPages/Booking';
 import MemberReservations from './pages/MemberPages/Reservation';
@@ -30,6 +32,8 @@ function App() {
         {/* PUBLIC PAGES */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<LoginPage />} />
 
         {/* MEMBER PAGES */}
