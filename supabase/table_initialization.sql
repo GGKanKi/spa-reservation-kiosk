@@ -257,6 +257,27 @@ CREATE INDEX IF NOT EXISTS idx_reservation_time ON public."Reservation"(reservat
 -- Index For Searching Client Records
 CREATE INDEX IF NOT EXISTS idx_order_client ON public."Order"(client_id);
 
+
+
+-- Alter Tables Update
+ALTER TABLE public."Order" ADD COLUMN IF NOT EXISTS order_total NUMERIC(10, 2);
+
+
+CREATE OR REPLACE FUNCTION auto_set_order_total()
+RETURNS TRIGGER AS $$
+BEGIN
+    SELECT price INTO NEW.order_total
+    FROM public."Service"
+    WHERE id = NEW.service_id
+    RETURN NEW
+END;
+$$ LANGUAGE plpsql;
+
+CREATE TRIGGER trigger_set_order_total
+    BEFORE INSERT ON public."Order"
+    FOR EACH ROW
+    EXECUTE PROCEDURE auto_set_order_total()
+
 -- ============================================================================
 -- DONE!
 -- INITIALIZED TABLES FOR THE SPA RESERVATION SYSTEM WITH RLS POLICIES
