@@ -162,8 +162,20 @@ export const RoomSchema = z.object({
   ),
 })
 
-// Room creation
-export const RoomCreateSchema = RoomSchema
+// Room creation (only name required, status defaults to maintenance)
+export const RoomCreateSchema = z.object({
+  name: z.string()
+    .min(3, "Room name must be 3+ characters")
+    .max(50, "Room name must be 50 characters or less"),
+  
+  isAvailable: z.enum(
+    ['available', 'cleaning', 'closed', 'reserved', 'maintenance']
+  ).default('maintenance'),
+  
+  assignedId: z.string()
+    .uuid("Invalid staff ID")
+    .optional(),
+})
 
 // Room update (all fields optional)
 export const RoomUpdateSchema = RoomSchema.partial()

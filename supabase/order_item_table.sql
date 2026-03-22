@@ -58,3 +58,8 @@ CREATE TRIGGER trigger_set_order_total
     AFTER INSERT OR UPDATE ON public."OrderItem"
     FOR EACH ROW
     EXECUTE PROCEDURE auto_set_order_total();
+
+-- ============================================================================
+-- Order Data list For Auto Computation of Prices
+-- DONE!
+-- ============================================================================

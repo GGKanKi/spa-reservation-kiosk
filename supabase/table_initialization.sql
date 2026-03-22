@@ -139,6 +139,25 @@ USING (
     )
 );
 
+-- Trigger to update assigned_name based on assigned_id
+CREATE OR REPLACE FUNCTION update_room_assigned_name()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.assigned_id IS NOT NULL THEN
+        SELECT CONCAT(first_name, ' ', last_name) INTO NEW.assigned_name
+        FROM public."Users"
+        WHERE id = NEW.assigned_id;
+    ELSE
+        NEW.assigned_name := NULL;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_room_assigned_name
+    BEFORE INSERT OR UPDATE ON public."Room"
+    FOR EACH ROW EXECUTE FUNCTION update_room_assigned_name();
+
 
 
 -- ==============================
@@ -257,26 +276,6 @@ CREATE INDEX IF NOT EXISTS idx_reservation_time ON public."Reservation"(reservat
 -- Index For Searching Client Records
 CREATE INDEX IF NOT EXISTS idx_order_client ON public."Order"(client_id);
 
-
-
--- Alter Tables Update
-ALTER TABLE public."Order" ADD COLUMN IF NOT EXISTS order_total NUMERIC(10, 2);
-
-
-CREATE OR REPLACE FUNCTION auto_set_order_total()
-RETURNS TRIGGER AS $$
-BEGIN
-    SELECT price INTO NEW.order_total
-    FROM public."Service"
-    WHERE id = NEW.service_id
-    RETURN NEW
-END;
-$$ LANGUAGE plpsql;
-
-CREATE TRIGGER trigger_set_order_total
-    BEFORE INSERT ON public."Order"
-    FOR EACH ROW
-    EXECUTE PROCEDURE auto_set_order_total()
 
 -- ============================================================================
 -- DONE!
