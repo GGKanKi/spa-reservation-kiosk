@@ -51,7 +51,7 @@ export const Services = {
             .from('Service')
             .insert([
                 {
-                    name: validation.data.serviceName,
+                    name: validation.data.name,
                     category: validation.data.category,
                     price: Number(validation.data.price),
                     description: validation.data.description,

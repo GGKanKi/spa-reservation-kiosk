@@ -24,8 +24,11 @@ export default function RoomManagement() {
   const [roomData, setRoomData] = useState<any[]>([]);
   const [checkRoomData, setCheckRoomData] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [roomName, setRoomName] = useState("");
 
 
   const openCheckModal = async (room:any) => {
@@ -38,6 +41,43 @@ export default function RoomManagement() {
     setShowModal(false);
     setCheckRoomData(null);
 
+  };
+
+  const openCreateModal = () => {
+    setRoomName("");
+    setShowCreateModal(true);
+  };
+
+  const closeCreateModal = () => {
+    setShowCreateModal(false);
+    setRoomName("");
+  };
+
+  const handleCreateRoom = async () => {
+    if (!roomName.trim()) {
+      alert("Room name is required");
+      return;
+    }
+
+    setCreateLoading(true);
+    try {
+      const result = await Rooms.createRoom({ name: roomName.trim() });
+      if (result) {
+        // Refresh the room list
+        const updatedRooms = await Rooms.getRooms();
+        if (updatedRooms) {
+          setRoomData(Array.isArray(updatedRooms) ? updatedRooms : []);
+        }
+        closeCreateModal();
+      } else {
+        alert("Failed to create room");
+      }
+    } catch (error) {
+      console.error("Error creating room:", error);
+      alert("Error creating room");
+    } finally {
+      setCreateLoading(false);
+    }
   };
   
   
@@ -126,11 +166,20 @@ export default function RoomManagement() {
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-              🏠 Room Management
-            </h1>
-            <p className="text-slate-400">Manage and control all rooms in the system</p>
+          <div className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+                🏠 Room Management
+              </h1>
+              <p className="text-slate-400">Manage and control all rooms in the system</p>
+            </div>
+            <button
+              onClick={openCreateModal}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center gap-2 shadow-lg"
+            >
+              <Plus size={20} />
+              Create Room
+            </button>
           </div>
 
           {/* Stats Cards */}
@@ -149,7 +198,7 @@ export default function RoomManagement() {
                 <div>
                   <p className="text-slate-400 text-sm font-medium">Active Rooms</p>
                     <p className="text-3xl font-bold text-white mt-2">
-                      {roomData.filter(r => r.is_available === true).length}
+                      {roomData.filter(r => r.is_available === 'available').length}
                     </p>
                 </div>
                 <span className="text-4xl">✅</span>
@@ -158,8 +207,10 @@ export default function RoomManagement() {
             <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm font-medium">Occupied Room</p>
-                  {roomData.filter(r => r.is_available === false).length}
+                  <p className="text-slate-400 text-sm font-medium">Occupied Rooms</p>
+                  <p className="text-3xl font-bold text-white mt-2">
+                    {roomData.filter(r => r.is_available === 'reserved' || r.is_available === 'cleaning').length}
+                  </p>
                 </div>
                 <span className="text-4xl">⏳</span>
               </div>
@@ -222,11 +273,17 @@ export default function RoomManagement() {
                         <td className="px-6 py-4 text-slate-400 text-sm max-w-xs truncate">{room.assigned_name || 'N/A'}</td>
                         <td className="px-6 py-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            room.is_available === true
+                            room.is_available === 'available'
                               ? 'bg-green-500/20 text-green-300'
+                              : room.is_available === 'maintenance'
+                              ? 'bg-yellow-500/20 text-yellow-300'
+                              : room.is_available === 'reserved'
+                              ? 'bg-blue-500/20 text-blue-300'
                               : 'bg-red-500/20 text-red-300'
                           }`}>
-                            {room.is_available === true ? 'Available' : 'Occupied'}
+                            {room.is_available === 'available' ? 'Available' : 
+                             room.is_available === 'maintenance' ? 'Maintenance' :
+                             room.is_available === 'reserved' ? 'Reserved' : 'Unavailable'}
                           </span>
                         </td>
                         <td className="px-6 py-4">
@@ -261,7 +318,7 @@ export default function RoomManagement() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Edit size={24} className="text-purple-400" />
-                Service Details
+                Room Details
               </h2>
               <button
                 onClick={closeCheckModal}
@@ -278,16 +335,18 @@ export default function RoomManagement() {
               </div>
               <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
                 <p className="text-slate-400 text-sm">Staff ID</p>
-                <p className="text-white font-semibold text-lg">{checkRoomData.staff_id || 'N/A'}</p>
+                <p className="text-white font-semibold text-lg">{checkRoomData.assigned_id || 'N/A'}</p>
               </div>
               <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
                 <p className="text-slate-400 text-sm">Staff Name</p>
                 <p className="text-white font-semibold text-lg">{checkRoomData.assigned_name || 'N/A'}</p>
               </div>
                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                  <p className="text-slate-400...">Availability</p>
+                  <p className="text-slate-400 text-sm">Availability</p>
                   <p className="text-white font-semibold text-lg">
-                    {checkRoomData.is_available === true ? '✅ Available' : '🚫 Occupied'}
+                    {checkRoomData.is_available === 'available' ? '✅ Available' : 
+                     checkRoomData.is_available === 'maintenance' ? '🔧 Maintenance' :
+                     checkRoomData.is_available === 'reserved' ? '📅 Reserved' : '🚫 Unavailable'}
                   </p>
                 </div>
             </div>
@@ -298,6 +357,74 @@ export default function RoomManagement() {
                 className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 transition-all duration-200"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Room Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-md border border-purple-500/30 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Plus size={24} className="text-purple-400" />
+                Create New Room
+              </h2>
+              <button
+                onClick={closeCreateModal}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">
+                  Room Name *
+                </label>
+                <input
+                  type="text"
+                  value={roomName}
+                  onChange={(e) => setRoomName(e.target.value)}
+                  placeholder="Enter room name (e.g., Room 101)"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  disabled={createLoading}
+                />
+              </div>
+              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
+                <p className="text-slate-400 text-sm">Default Status</p>
+                <p className="text-white font-semibold text-lg">🔧 Maintenance (Unavailable)</p>
+                <p className="text-slate-500 text-xs mt-1">Room will be unavailable until assigned for use</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleCreateRoom}
+                disabled={createLoading || !roomName.trim()}
+                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                {createLoading ? (
+                  <>
+                    <div className="animate-spin">⚙️</div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={20} />
+                    Create Room
+                  </>
+                )}
+              </button>
+              <button
+                onClick={closeCreateModal}
+                disabled={createLoading}
+                className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                Cancel
               </button>
             </div>
           </div>
