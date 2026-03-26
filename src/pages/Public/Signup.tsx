@@ -32,10 +32,10 @@ export default function SignupPage() {
 
     const { data: signupData, error } = await AuthServices.signup(
       finaluserData.firstName,
-      finaluserData.middleName,
+      finaluserData.middleName || '',
       finaluserData.lastName,
-      finaluserData.phoneNum,
-      finaluserData.emailAddress, 
+      finaluserData.phoneNum || '',
+      finaluserData.emailAdd, 
       finaluserData.password
     );
 
@@ -46,7 +46,7 @@ export default function SignupPage() {
     } else {
       console.log("Signup successful:", signupData);
       setIsSubmitting(false);
-      navigate("/member/dashboard");
+      navigate("/login");
     }
   };
 
@@ -95,7 +95,7 @@ export default function SignupPage() {
                 placeholder="Value"
                 className="w-full px-3 py-2 border-2 border-blue-400 rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none bg-white"
               />
-              {errors.middleName && <p className="text-red-500 text-xs mt-1">{errors.middleName.message}</p>}
+              {errors.middleName && <p className="text-red-500 text-xs mt-1">{errors.middleName?.message}</p>}
             </div>
 
             {/* Last Name */}
@@ -124,11 +124,11 @@ export default function SignupPage() {
             <div>
               <label className="block text-xs font-bold text-gray-800 uppercase mb-1">Email</label>
               <input
-                {...register('emailAddress')}
+                {...register('emailAdd')}
                 placeholder="Value"
                 className="w-full px-3 py-2 border-2 border-blue-400 rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none bg-white"
               />
-              {errors.emailAddress && <p className="text-red-500 text-xs mt-1">{errors.emailAddress.message}</p>}
+              {errors.emailAdd && <p className="text-red-500 text-xs mt-1">{errors.emailAdd.message}</p>}
             </div>
 
             {/* Password */}
