@@ -139,25 +139,6 @@ USING (
     )
 );
 
--- Trigger to update assigned_name based on assigned_id
-CREATE OR REPLACE FUNCTION update_room_assigned_name()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.assigned_id IS NOT NULL THEN
-        SELECT CONCAT(first_name, ' ', last_name) INTO NEW.assigned_name
-        FROM public."Users"
-        WHERE id = NEW.assigned_id;
-    ELSE
-        NEW.assigned_name := NULL;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_update_room_assigned_name
-    BEFORE INSERT OR UPDATE ON public."Room"
-    FOR EACH ROW EXECUTE FUNCTION update_room_assigned_name();
-
 
 
 -- ==============================

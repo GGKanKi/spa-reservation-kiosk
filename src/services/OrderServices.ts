@@ -4,7 +4,6 @@ import { supabase } from "../lib/supabase"
 import { OrderSchema } from "./ValidationServices"
 
 
-
 export const Orders = {
 
     async getOrders() {

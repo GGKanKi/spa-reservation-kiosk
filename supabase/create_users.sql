@@ -11,7 +11,7 @@ RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO public."Users"(id, first_name, middle_name, last_name, email_add, phone_num, role)
     VALUES (
-        new.id, -- This is now a UUID
+        new.id, 
         new.raw_user_meta_data->>'first_name',
         new.raw_user_meta_data->>'middle_name',
         new.raw_user_meta_data->>'last_name',

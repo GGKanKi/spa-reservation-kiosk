@@ -26,8 +26,17 @@ export default function ServiceManagement() {
   const [serviceData, setServiceData] = useState<any[]>([]);
   const [checkServiceData, setCheckServiceData] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [serviceInputData, setServiceInput] = useState({
+    name: '',
+    category: '',
+    price: '',
+    description: '',
+
+  });
 
   const openCheckModal = (service: any) => {
     setCheckServiceData(service);
@@ -38,6 +47,52 @@ export default function ServiceManagement() {
     setShowModal(false);
     setCheckServiceData(null);
   };
+
+  const openCreateModal = () => {
+    setShowCreateModal(true);
+    setServiceInput({ name: '', category: '', price: '', description: '' });
+  };
+
+  const closeCreateModal = () => {
+    setShowCreateModal(false);
+    setServiceInput({ name: '', category: '', price: '', description: '' });
+  };
+
+
+  const handleCreateService = async () => {
+
+    if  (!serviceInputData.name.trim()) {
+      alert('Service name is requirec.');
+      return;
+    }
+
+    setCreateLoading(true);
+    try {
+      const result = await Services.createService({
+          name: serviceInputData.name.trim(),
+          category: serviceInputData.category.trim(),
+          price: serviceInputData.price,
+          description: serviceInputData.description.trim(),
+      });
+      if (result) {
+        const updatedService = await Services.getServices();
+        if (updatedService) {
+          setServiceData(Array.isArray(updatedService) ? updatedService : []);
+        }
+        closeCreateModal();
+      } else {
+        alert('Failed to create new Service')
+      }
+    } catch (err) {
+      console.error('Error Creating Service')
+      alert('Error Creating Service.')
+    } finally {
+      setCreateLoading(false)
+    }
+
+  };
+
+
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -119,11 +174,19 @@ export default function ServiceManagement() {
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 flex justify-between items-center">
+            <div>
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
               🔧 Service Management
             </h1>
             <p className="text-slate-400">Manage and control all services in the system</p>
+           </div>
+          <button
+            onClick={openCreateModal}
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center gap-2 shadow-lg">
+              <Plus size={20} />
+              Create Service
+          </button>
           </div>
 
           {/* Stats Cards */}
@@ -283,6 +346,115 @@ export default function ServiceManagement() {
                 className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 transition-all duration-200"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Create Room Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-md border border-purple-500/30 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Plus size={24} className="text-purple-400" />
+                Create New Service
+              </h2>
+              <button
+                onClick={closeCreateModal}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">
+                  Service Name *
+                </label>
+<input
+  type="text"
+  name="name"
+  value={serviceInputData.name}
+  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+  placeholder="Enter service name"
+  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+  disabled={createLoading}
+/>
+              </div>
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">
+                  Service Category *
+                </label>
+<input
+  type="text"
+  name="category"
+  value={serviceInputData.category}
+  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+  placeholder="Enter service category"
+  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+  disabled={createLoading}
+/>
+
+              </div>
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">
+                  Service Price *
+                </label>
+<input
+  type="number"
+  name="price"
+  value={serviceInputData.price}
+  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+  placeholder="Enter service price"
+  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+  disabled={createLoading}
+/>
+              </div>
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">
+                  Service Description *
+                </label>
+                  <input
+                    type="text"
+                    name="description"
+                    value={serviceInputData.description}
+                    onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+                    placeholder="Enter service description"
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    disabled={createLoading}
+                  />
+              </div>
+            </div>
+            
+
+            <div className="space-y-3">
+              <button
+                onClick={handleCreateService}
+                disabled={createLoading || !serviceInputData.name.trim()}
+                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                {createLoading ? (
+                  <>
+                    <div className="animate-spin">⚙️</div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={20} />
+                    Create Service
+                  </>
+                )}
+              </button>
+              <button
+                onClick={closeCreateModal}
+                disabled={createLoading}
+                className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                Cancel
               </button>
             </div>
           </div>
