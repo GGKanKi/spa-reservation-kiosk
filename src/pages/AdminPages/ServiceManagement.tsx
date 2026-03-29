@@ -71,7 +71,7 @@ export default function ServiceManagement() {
       const result = await Services.createService({
           name: serviceInputData.name.trim(),
           category: serviceInputData.category.trim(),
-          price: serviceInputData.price,
+          price: Number(serviceInputData.price),
           description: serviceInputData.description.trim(),
       });
       if (result) {
@@ -375,44 +375,50 @@ export default function ServiceManagement() {
                 <label className="block text-slate-300 text-sm font-medium mb-2">
                   Service Name *
                 </label>
-<input
-  type="text"
-  name="name"
-  value={serviceInputData.name}
-  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-  placeholder="Enter service name"
-  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-  disabled={createLoading}
-/>
+                <input
+                  type="text"
+                  name="name"
+                  value={serviceInputData.name}
+                  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+                  placeholder="Enter service name"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  disabled={createLoading}
+                />
               </div>
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">
                   Service Category *
                 </label>
-<input
-  type="text"
-  name="category"
-  value={serviceInputData.category}
-  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-  placeholder="Enter service category"
-  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-  disabled={createLoading}
-/>
-
+                <select
+                  name="category"
+                  value={serviceInputData.category}
+                  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  disabled={createLoading}
+                >
+                  <option value="">Select category</option>
+                  <option value="massage">Massage</option>
+                  <option value="spa">Spa</option>
+                  <option value="facial">Facial</option>
+                  <option value="body_wrap">Body Wrap</option>
+                  <option value="nail_care">Nail Care</option>
+                  <option value="aromatherapy">Aromatherapy</option>
+                  <option value="bundle">Bundle</option>
+                </select>
               </div>
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">
                   Service Price *
                 </label>
-<input
-  type="number"
-  name="price"
-  value={serviceInputData.price}
-  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-  placeholder="Enter service price"
-  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-  disabled={createLoading}
-/>
+                <input
+                  type="number"
+                  name="price"
+                  value={serviceInputData.price}
+                  onChange={(e) => setServiceInput(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+                  placeholder="Enter service price"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  disabled={createLoading}
+                />
               </div>
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">
