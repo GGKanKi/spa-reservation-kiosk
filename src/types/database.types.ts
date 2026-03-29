@@ -59,7 +59,6 @@ export interface User {
   lastName: string
   emailAdd: string
   phoneNum?: string
-
   // Role & Permissions
   role: UserRole
 

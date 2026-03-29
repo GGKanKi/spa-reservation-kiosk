@@ -64,6 +64,22 @@ export const Services = {
         }
 
         return data
+    },
+
+
+    async deleteService (serviceId: string) {
+
+        const {data, error} = await supabase
+            .from('Service')
+            .delete()
+            .eq('id', serviceId)
+
+        if (error) {
+            console.log('Error deleting service:', error)
+        }
+
+        return data
+
     }
 
 }

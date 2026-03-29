@@ -92,6 +92,21 @@ export default function ServiceManagement() {
 
   };
 
+  const handleDeleteService = async (id: string) => {
+    console.log('Deleting service with id:', id); 
+    
+    if (!confirm('Are you sure you want to delete this service?')) return;
+
+    try {
+      await Services.deleteService(id);
+      const updatedService = await Services.getServices();
+      setServiceData(Array.isArray(updatedService) ? updatedService : []);
+    } catch (err) {
+      console.error('Error deleting service:', err);
+      alert('Error deleting service.');
+    }
+  };
+
 
 
   useEffect(() => {
@@ -280,13 +295,21 @@ export default function ServiceManagement() {
                         <td className="px-6 py-4 text-white font-semibold">₱{parseFloat(service.price).toFixed(2)}</td>
                         <td className="px-6 py-4 text-slate-400 text-sm max-w-xs truncate">{service.description || 'N/A'}</td>
                         <td className="px-6 py-4">
-                          <button
-                            onClick={() => openCheckModal(service)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium"
-                          >
-                            <Edit size={16} />
-                            EDIT
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => openCheckModal(service)}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium"
+                            >
+                              <Edit size={16} />
+                              EDIT
+                            </button>
+                            <button
+                              onClick={() => handleDeleteService(service.id)}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium">
+                                <Trash2 size={16} />
+                                DELETE
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
