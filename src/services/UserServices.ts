@@ -122,11 +122,10 @@ export const Users = {
                 first_name: validation.data.firstName,
                 middle_name: validation.data.middleName,
                 last_name: validation.data.lastName,
-                email_add: validation.data.emailAddress,
+                email_add: validation.data.emailAdd,
                 phone_number: validation.data.phoneNum,
-                username: validation.data.username,
                 password: validation.data.password,
-                role: validation.data.userRole,
+                role: validation.data.role,
                 }
             ])
             .select()
