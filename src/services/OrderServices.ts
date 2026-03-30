@@ -109,6 +109,20 @@ export const Orders = {
         return { error: itemsError.message, data: null }
     }
 
+    // Calculate and save order total
+    const orderTotal = orderItems.reduce((sum, item) => {
+        return sum + (item.price_at_purchase * item.quantity);
+    }, 0);
+
+    const { error: updateError } = await supabase
+        .from('Order')
+        .update({ order_total: orderTotal })
+        .eq('id', order.id);
+
+    if (updateError) {
+        return { error: updateError.message, data: null };
+    }
+
     return { data: order, error: null }
     }
 
