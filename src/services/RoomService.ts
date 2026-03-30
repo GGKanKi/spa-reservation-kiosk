@@ -20,6 +20,20 @@ export const Rooms = {
 
     },
 
+
+    async getAvailableRooms (status: string) {
+        const {data, error} = await supabase
+            .from('Room')
+            .select('*')
+            .eq('is_available', status)
+
+        if (error) {
+            console.error('Error Message: ', error)
+        }
+
+        return data
+    },
+
     // For Members who wants available Rooms
     async selectRoom (roomId: string, roomAvailability: string) {
 
@@ -66,6 +80,22 @@ export const Rooms = {
 
         return data
         
+    },
+
+
+    async deleteRoom (roomId: string) {
+
+        const {data, error} = await supabase
+            .from('Room')
+            .delete()
+            .eq('id', roomId)
+
+        if (error) {
+            console.error('Error Message: ', error)
+        }
+
+        return data
+
     }
 
 }

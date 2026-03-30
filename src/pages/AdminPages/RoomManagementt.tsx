@@ -11,6 +11,7 @@ const navItems = [
   { label: "STAFFS", path: "/admin/staff-management", icon: "👔" },
   { label: "SERVICES", path: "/admin/service-management", icon: "🔧" },
   { label: "ROOMS", path: "/admin/room-management", icon: "🏠" },
+  { label: "RESERVATION", path: "/admin/reservations"},
   { label: "ORDERS", path: "/admin/orders", icon: "📦" },
   { label: "PAYMENTS", path: "/admin/payments", icon: "💳" },
   { label: "REPORTS", path: "/admin/reports", icon: "📈" },
@@ -51,6 +52,24 @@ export default function RoomManagement() {
   const closeCreateModal = () => {
     setShowCreateModal(false);
     setRoomName("");
+  };
+
+
+  const handleDeleteRoom = async(id: string) => {
+
+    if (!confirm('Are you sure you want to delete this room?')) return; 
+
+    try {
+      await Rooms.deleteRoom(id);
+      const updatedRooms = await Rooms.getRooms();
+      setRoomData(Array.isArray(updatedRooms) ? updatedRooms : []);
+
+    } catch (err) {
+      console.error('Error Message: ', err)
+      alert('Error deleting room.');
+
+    }
+
   };
 
   const handleCreateRoom = async () => {
@@ -287,13 +306,21 @@ export default function RoomManagement() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <button
-                            onClick={() => openCheckModal(room)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium"
-                          >
-                            <Edit size={16} />
-                            EDIT
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => openCheckModal(room)}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium"
+                            >
+                              <Edit size={16} />
+                              EDIT
+                            </button>
+                            <button
+                              onClick={() => handleDeleteRoom(room.id)}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium">
+                                <Trash2 size={16} />
+                                DELETE
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
