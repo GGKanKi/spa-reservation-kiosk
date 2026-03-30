@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Rooms } from "../../services/RoomService";
 import { Users as UsersIcon, Search, Edit, Trash2, Shield, UserCheck, X, Plus } from "lucide-react";
+import { Users } from "../../services/UserServices";
 import { supabase } from "../../lib/supabase";
 
 const navItems = [
@@ -29,7 +30,15 @@ export default function RoomManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);
-  const [roomName, setRoomName] = useState("");
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [roomInputData, setRoomInputData] = useState({
+    name: '',
+    assigned_id: '',
+    assignee_name: '',
+    is_available: ''
+
+  });
+  
 
 
   const openCheckModal = async (room:any) => {
@@ -44,14 +53,30 @@ export default function RoomManagement() {
 
   };
 
-  const openCreateModal = () => {
-    setRoomName("");
+  const openCreateModal = async () => {
     setShowCreateModal(true);
+    setRoomInputData({
+        name: '',
+      assigned_id: '',
+      assignee_name: '',
+      is_available: ''
+    });
+
+    const staff = await Users.getUserByRole('staff');
+
+    setStaffList(staff || []);
+
+
   };
 
   const closeCreateModal = () => {
     setShowCreateModal(false);
-    setRoomName("");
+    setRoomInputData({
+        name: '',
+        assigned_id: '',
+        assignee_name: '',
+        is_available: ''
+    });
   };
 
 
@@ -73,14 +98,17 @@ export default function RoomManagement() {
   };
 
   const handleCreateRoom = async () => {
-    if (!roomName.trim()) {
+    if (!roomInputData.name.trim()) {
       alert("Room name is required");
       return;
     }
 
     setCreateLoading(true);
     try {
-      const result = await Rooms.createRoom({ name: roomName.trim() });
+      const result = await Rooms.createRoom({ 
+        name: roomInputData.name.trim(),
+        isAvailable: roomInputData.is_available || 'maintenance',
+      });
       if (result) {
         // Refresh the room list
         const updatedRooms = await Rooms.getRooms();
@@ -316,8 +344,7 @@ export default function RoomManagement() {
                             </button>
                             <button
                               onClick={() => handleDeleteRoom(room.id)}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium">
-                                <Trash2 size={16} />
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 text-sm font-medium">                                <Trash2 size={16} />
                                 DELETE
                             </button>
                           </div>
@@ -414,24 +441,37 @@ export default function RoomManagement() {
                 </label>
                 <input
                   type="text"
-                  value={roomName}
-                  onChange={(e) => setRoomName(e.target.value)}
+                  value={roomInputData.name}
+                  onChange={(e) => setRoomInputData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter room name (e.g., Room 101)"
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   disabled={createLoading}
                 />
               </div>
-              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                <p className="text-slate-400 text-sm">Default Status</p>
-                <p className="text-white font-semibold text-lg">🔧 Maintenance (Unavailable)</p>
-                <p className="text-slate-500 text-xs mt-1">Room will be unavailable until assigned for use</p>
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">
+                  Availability Status *
+                </label>
+                <select
+                  value={roomInputData.is_available}
+                  onChange={(e) => setRoomInputData(prev => ({ ...prev, is_available: e.target.value }))}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  disabled={createLoading}
+                >
+                  <option value="">Select status</option>
+                  <option value="available">✅ Available</option>
+                  <option value="cleaning">🧹 Cleaning</option>
+                  <option value="closed">🚫 Closed</option>
+                  <option value="reserved">📅 Reserved</option>
+                  <option value="maintenance">🔧 Maintenance</option>
+                </select>
               </div>
             </div>
 
             <div className="space-y-3">
               <button
                 onClick={handleCreateRoom}
-                disabled={createLoading || !roomName.trim()}
+                disabled={createLoading || !roomInputData.name.trim()}
                 className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {createLoading ? (

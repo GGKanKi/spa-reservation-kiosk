@@ -9,5 +9,5 @@ ON "Room"
 FOR DELETE
 TO authenticated
 USING (
-    auth.uid() IN (SELECT id FROM "USERS" WHERE role = 'admin')
+    auth.uid() IN (SELECT id FROM "Users" WHERE role = 'admin')
 );

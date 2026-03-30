@@ -80,7 +80,7 @@ export const Services = {
 
         return data
 
-    }
+    },
 
 }
 
