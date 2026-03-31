@@ -61,7 +61,6 @@ export default function OrderList() {
     setCheckOrderData(null);
   };
 
-// Add this useEffect to fetch dropdown data when modal opens
   const openCreateModal = async () => {
     setShowCreateModal(true);
     setOrderInputData({ name: '', clientId: '', staffId: '', roomId: '', items: [] });

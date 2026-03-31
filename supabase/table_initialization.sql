@@ -258,6 +258,12 @@ CREATE INDEX IF NOT EXISTS idx_reservation_time ON public."Reservation"(reservat
 CREATE INDEX IF NOT EXISTS idx_order_client ON public."Order"(client_id);
 
 
+-- ALTER TABLES
+ALTER TABLE "Room" 
+  DROP COLUMN assigned_id, 
+  DROP COLUMN assigned_name;
+
+
 -- ============================================================================
 -- DONE!
 -- INITIALIZED TABLES FOR THE SPA RESERVATION SYSTEM WITH RLS POLICIES
