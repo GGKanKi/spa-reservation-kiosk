@@ -96,6 +96,29 @@ export const Rooms = {
 
         return data
 
-    }
+    },
+
+    async updateRoom (roomId: string, roomData:{
+        name: string,
+        is_available: string,
+    }) {
+        try {
+            const {data, error} = await supabase
+                .from('Room')
+                .update(roomData)
+                .eq('id', roomId)
+                .select()
+                .single()
+
+                if (error) {
+                    return { data: null, error: error.message };
+                }
+
+                return {data, error: null}
+
+        } catch (err) {
+            console.error('Error Message: ', err)
+        }
+    },
 
 }

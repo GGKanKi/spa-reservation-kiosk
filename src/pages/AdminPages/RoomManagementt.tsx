@@ -40,9 +40,11 @@ export default function RoomManagement() {
   });
   
 
+  const [roomUpdateData, setRoomUpdateData] = useState('');
 
   const openCheckModal = async (room:any) => {
     setCheckRoomData(room);
+    setRoomUpdateData(room.is_available)
     setShowModal(true);
   };
 
@@ -77,6 +79,22 @@ export default function RoomManagement() {
         assignee_name: '',
         is_available: ''
     });
+  };
+
+  const handleUpdateRoom = async () => {
+    try {
+      await Rooms.updateRoom(checkRoomData.id, {
+        name: checkRoomData.name,
+        is_available: roomUpdateData
+
+      });
+      const updatedRooms = await Rooms.getRooms();
+      setRoomData(Array.isArray(updatedRooms)? updatedRooms : []);
+      closeCheckModal();
+    } catch (err){
+      console.error('Errror Message: ', err)
+      alert('Error Updating Room')
+    }
   };
 
 
@@ -388,24 +406,35 @@ export default function RoomManagement() {
                 <p className="text-white font-semibold text-lg">{checkRoomData.name}</p>
               </div>
               <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                <p className="text-slate-400 text-sm">Staff ID</p>
-                <p className="text-white font-semibold text-lg">{checkRoomData.assigned_id || 'N/A'}</p>
-              </div>
-              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                <p className="text-slate-400 text-sm">Staff Name</p>
-                <p className="text-white font-semibold text-lg">{checkRoomData.assigned_name || 'N/A'}</p>
-              </div>
-               <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                  <p className="text-slate-400 text-sm">Availability</p>
-                  <p className="text-white font-semibold text-lg">
-                    {checkRoomData.is_available === 'available' ? '✅ Available' : 
-                     checkRoomData.is_available === 'maintenance' ? '🔧 Maintenance' :
-                     checkRoomData.is_available === 'reserved' ? '📅 Reserved' : '🚫 Unavailable'}
-                  </p>
+                <label className="text-slate-400 text-sm block mb-2">Update Availability</label>
+                <div className="relative">
+                  <select
+                    value={roomUpdateData}
+                    onChange={(e) => setRoomUpdateData(e.target.value)}
+                    className="w-full bg-slate-800 text-white font-semibold text-lg p-3 rounded-xl border border-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none cursor-pointer appearance-none transition-all"
+                  >
+                    <option value="available">Available</option>
+                    <option value="occupied">Occupied</option>
+                    <option value="maintenance">Maintenance</option>
+                  </select>
+                  
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </div>
+                </div>
+              </div>
             </div>
 
+            
+
             <div className="space-y-3">
+              <button
+                onClick={handleUpdateRoom}
+                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200"> 
+                Update Room
+              </button>
               <button
                 onClick={closeCheckModal}
                 className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 transition-all duration-200"
