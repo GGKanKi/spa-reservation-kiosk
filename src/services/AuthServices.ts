@@ -1,4 +1,3 @@
-import { success } from "zod";
 import { supabase } from "../lib/supabase";
 
 export const AuthServices = {

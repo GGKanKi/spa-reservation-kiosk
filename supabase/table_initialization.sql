@@ -170,8 +170,8 @@ USING (
         SELECT 1 FROM public."Users"
         WHERE id = auth.uid() AND (
             role = 'admin' OR           -- Admins see all
-            id = client_id OR           -- Clients see their own
-            id = staff_id               -- Staff see their assigned work
+            id = client_id OR           
+            id = staff_id              
         )
     )
 );

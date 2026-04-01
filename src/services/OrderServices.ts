@@ -125,7 +125,4 @@ export const Orders = {
 
     return { data: order, error: null }
     }
-
-
-
 }

@@ -303,8 +303,6 @@ export default function RoomManagement() {
                 <thead>
                   <tr className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-b border-purple-500/20">
                     <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">NAME</th>
-                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">STAFF ID</th>
-                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">STAFF NAME</th>
                     <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">AVAILABILITY</th>
                     <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">ACTIONS</th>
                   </tr>
@@ -334,8 +332,6 @@ export default function RoomManagement() {
                             <p className="text-white font-medium">{room.name}</p>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-white font-semibold">{room.staff_id || 'N/A'}</td>
-                        <td className="px-6 py-4 text-slate-400 text-sm max-w-xs truncate">{room.assigned_name || 'N/A'}</td>
                         <td className="px-6 py-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             room.is_available === 'available'
