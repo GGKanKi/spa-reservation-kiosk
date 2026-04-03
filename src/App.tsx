@@ -15,7 +15,7 @@ import UserManagement from './pages/AdminPages/UserManagement';
 import StaffManagement from './pages/AdminPages/StaffManagement';
 import ServiceManagement from './pages/AdminPages/ServiceManagement';
 import RoomManagement from './pages/AdminPages/RoomManagementt';
-import Reservation from './pages/AdminPages/Reservation';
+import Reservation from './pages/AdminPages/ReservationManagement';
 import OrderList from './pages/AdminPages/Order';
 import PaymentList from './pages/AdminPages/Payment';
 import ReportList from './pages/AdminPages/Report';
