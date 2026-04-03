@@ -29,6 +29,28 @@ export const Orders = {
         
     },
 
+    async getOrderByUserId(userId: string) {
+
+        const {data, error} = await supabase
+            .from('Order')
+            .select(`
+                    *, OrderItem(
+                    id,
+                    quantity,
+                    price_at_purchase,
+                    Service(name, category, price, description)
+                    )
+                    `)
+            .eq('client_id', userId)
+
+        if (error) {
+            console.error('Error Message:', error)
+            return {data: null, error: error.message}
+        }
+
+        return {data, error: null}
+    },
+
 
     async selectOrder(orderId: string) {
         const {data, error} = await supabase
@@ -59,13 +81,16 @@ export const Orders = {
         return { error: "Validation failed", data: null }
     }
 
-    // 1. Create the main Order
+    const { data: authUserData } = await supabase.auth.getUser();
+    const authUserId = authUserData?.user?.id;
+    const orderClientId = authUserId || validation.data.clientId;
+
     const { data: order, error: orderError } = await supabase
         .from('Order')
         .insert([
         {
             name: validation.data.orderName,
-            client_id: validation.data.clientId,
+            client_id: orderClientId,
             staff_id: validation.data.staffId,
             room_id: validation.data.roomId,
             order_status: 'pending',
