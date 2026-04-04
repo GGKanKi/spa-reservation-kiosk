@@ -271,8 +271,8 @@ DROP TABLE IF EXISTS public."Reservation";
 
 ALTER TABLE "Order" 
     ADD COLUMN reservation_date date,
-    ADD COLUMN start_time TIMESTAMPTZ,
-    ADD COLUMN end_time TIMESTAMPTZ;
+    ADD COLUMN start_time time,
+    ADD COLUMN end_time time;
 
 
 -- ============================================================================

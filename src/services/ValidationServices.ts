@@ -214,11 +214,19 @@ export const OrderSchema = z.object({
   roomId: z.string()
     .uuid("Invalid room ID")
     .optional(),
-  
+
+  reservationDate: z.string()
+    .min(1, "Reservation date is required"),
+
+  startTime: z.string()
+    .min(1, "Start time is required"),
+
+  endTime: z.string()
+    .min(1, "End time is required"),
+
   items: z.array(OrderItemSchema)
     .min(1, "Order must have at least one service"),
 })
-
 // Order creation
 export const OrderCreateSchema = OrderSchema
 
