@@ -51,7 +51,6 @@ export const Orders = {
         return {data, error: null}
     },
 
-
     async selectOrder(orderId: string) {
         const {data, error} = await supabase
             .from('Order')
@@ -94,6 +93,9 @@ export const Orders = {
             staff_id: validation.data.staffId,
             room_id: validation.data.roomId,
             order_status: 'pending',
+            reservation_date: validation.data.reservationDate,
+            start_time: validation.data.startTime,
+            end_time: validation.data.endTime
         }
         ])
         .select()
