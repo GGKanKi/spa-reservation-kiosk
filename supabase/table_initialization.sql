@@ -264,6 +264,17 @@ ALTER TABLE "Room"
   DROP COLUMN assigned_name;
 
 
+-- REMOVE RESERVATION TABLE (IRRELEVANT)
+-- ADD Time Slot in Oder Table
+
+DROP TABLE IF EXISTS public."Reservation";
+
+ALTER TABLE "Order" 
+    ADD COLUMN reservation_date date,
+    ADD COLUMN start_time TIMESTAMPTZ,
+    ADD COLUMN end_time TIMESTAMPTZ;
+
+
 -- ============================================================================
 -- DONE!
 -- INITIALIZED TABLES FOR THE SPA RESERVATION SYSTEM WITH RLS POLICIES

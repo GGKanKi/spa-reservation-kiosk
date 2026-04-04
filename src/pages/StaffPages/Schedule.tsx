@@ -1,9 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Users } from "../../services/UserServices";
-import { ReservationServices } from "../../services/ReservationSerivces";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
+import { Orders } from "../../services/OrderServices";
 
 const navItems = [
   { label: "DASHBOARD", path: "/staff/dashboard" },
@@ -46,31 +46,31 @@ export default function ClientList() {
     const fetchRoomAssigned = async () => {
       try {
         setLoading(true);
-        const results = await ReservationServices.staffClients(userId);
-        setAssignedRoom(results || []);
+        const results = await Orders.getOrders();
 
-        if (results) {
-          setAssignedRoom(Array.isArray(results) ? results : []);
-          
-          results.forEach(async (res) => {
-            try{
-              const profile = await Users.getUserProfile(res.client_id);
-
-              // Check user name if valid
-              const name = profile.data?.first_name || "Unknown Client";
-              setClientNames(prev => ({
-                    ...prev,
-                    [res.client_id]: name
-                  }));
-            } catch (err)
-            {
-              console.error("Failed to fetch name for", res.client_id);
-            }
-          });
-
-        } else {
+        if (results.error) {
+          console.error(results.error);
           setAssignedRoom([]);
+          return;
         }
+
+        const orders = Array.isArray(results.data) ? results.data : [];
+        setAssignedRoom(orders);
+
+        // Fetch client names
+        orders.forEach(async (res) => {
+          try {
+            const profile = await Users.getUserProfile(res.client_id);
+            const name = profile.data?.first_name || "Unknown Client";
+            setClientNames(prev => ({
+              ...prev,
+              [res.client_id]: name
+            }));
+          } catch (err) {
+            console.error("Failed to fetch name for", res.client_id);
+          }
+        });
+
       } catch (err) {
         console.error('Error Message:', err);
         setAssignedRoom([]);
@@ -78,7 +78,6 @@ export default function ClientList() {
         setLoading(false);
       }
     };
-
 
     fetchRoomAssigned();
   }, [userId]);

@@ -151,6 +151,10 @@ export interface Order {
   OrderItem?: OrderItem[]
 
   // Timestamps
+  reservationDate: string // ISO 8601 format (date)
+  startTime: string // ISO 8601 format (datetime)
+  endTime: string // ISO 8601 format (datetime)
+
   createdAt: string // ISO 8601 format
 }
 

@@ -8,7 +8,6 @@ const navItems = [
   { label: "STAFFS", path: "/admin/staff-management" },
   { label: "SERVICES", path: "/admin/service-management" },
   { label: "ROOMS", path: "/admin/room-management" },
-  { label: "RESERVATION", path: "/admin/reservations"},
   { label: "ORDERS", path: "/admin/orders" },
   { label: "PAYMENTS", path: "/admin/payments" },
   { label: "REPORTS", path: "/admin/reports" },
