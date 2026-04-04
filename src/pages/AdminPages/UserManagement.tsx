@@ -11,7 +11,6 @@ const navItems = [
   { label: "STAFFS", path: "/admin/staff-management", icon: "👔" },
   { label: "SERVICES", path: "/admin/service-management", icon: "🔧" },
   { label: "ROOMS", path: "/admin/room-management", icon: "🏠" },
-  { label: "RESERVATION", path: "/admin/reservations"},
   { label: "ORDERS", path: "/admin/orders", icon: "📦" },
   { label: "PAYMENTS", path: "/admin/payments", icon: "💳" },
   { label: "REPORTS", path: "/admin/reports", icon: "📈" },

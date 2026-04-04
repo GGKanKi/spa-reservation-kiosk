@@ -20,6 +20,15 @@ const navItems = [
   { label: "SETTINGS", path: "/admin/settings", icon: "⚙️" },
 ];
 
+const timeSlots = [
+  { label: '9:00 AM - 10:00 AM', start: '09:00', end: '10:00' },
+  { label: '10:00 AM - 11:00 AM', start: '10:00', end: '11:00' },
+  { label: '11:00 AM - 12:00 PM', start: '11:00', end: '12:00' },
+  { label: '1:00 PM - 2:00 PM', start: '13:00', end: '14:00' },
+  { label: '2:00 PM - 3:00 PM', start: '14:00', end: '15:00' },
+  { label: '3:00 PM - 4:00 PM', start: '15:00', end: '16:00' },
+];
+
 export default function OrderList() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,8 +40,9 @@ export default function OrderList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);
+  const [serviceSearch, setServiceSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
-  {/**DropDown Data */}
   const [staffList, setStaffList] = useState<any[]>([]);
   const [roomList, setRoomList] = useState<any[]>([]);
   const [serviceList, setServiceList] = useState<any[]>([]);
@@ -43,12 +53,18 @@ export default function OrderList() {
     staffId: string;
     roomId: string;
     items: { serviceId: string; quantity: number }[];
+    reservationDate: string;
+    startTime: string;
+    endTime: string;
   }>({
     name: '',
     clientId: '',
     staffId: '',
     roomId: '',
     items: [],
+    reservationDate: '',
+    startTime: '',
+    endTime: '',
   });
 
   const openCheckModal = (order: any) => {
@@ -63,12 +79,9 @@ export default function OrderList() {
 
   const openCreateModal = async () => {
     setShowCreateModal(true);
-    setOrderInputData({ name: '', clientId: '', staffId: '', roomId: '', items: [] });
+    setOrderInputData({ name: '', clientId: '', staffId: '', roomId: '', items: [], reservationDate: '', startTime: '', endTime: '' });
 
-    // Fetch staff, rooms, services for dropdowns
     const staff = await Users.getUserByRole('staff');
-    console.log('Staff data:', staff);
-    // Update Rooms With Availability = Available
     const rooms = await Rooms.getAvailableRooms('available');
     const services = await Services.getServices();
 
@@ -76,35 +89,31 @@ export default function OrderList() {
     setRoomList(Array.isArray(rooms) ? rooms : []);
     setServiceList(Array.isArray(services) ? services : []);
 
-    // Auto set clientId from logged in user
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setOrderInputData(prev => ({ ...prev, clientId: user.id }));
     }
   };
 
-  // Helper to add a service to items
   const addItem = (serviceId: string) => {
     setOrderInputData(prev => {
-      const exists = prev.items.find((i: any) => i.serviceId === serviceId);
-      if (exists) return prev; // already added
+      const exists = prev.items.find((i) => i.serviceId === serviceId);
+      if (exists) return prev;
       return { ...prev, items: [...prev.items, { serviceId, quantity: 1 }] };
     });
   };
 
-  // Helper to remove a service from items
   const removeItem = (serviceId: string) => {
     setOrderInputData(prev => ({
       ...prev,
-      items: prev.items.filter((i: any) => i.serviceId !== serviceId)
+      items: prev.items.filter((i) => i.serviceId !== serviceId)
     }));
   };
 
-  // Helper to update quantity
   const updateQuantity = (serviceId: string, quantity: number) => {
     setOrderInputData(prev => ({
       ...prev,
-      items: prev.items.map((i: any) =>
+      items: prev.items.map((i) =>
         i.serviceId === serviceId ? { ...i, quantity } : i
       )
     }));
@@ -112,12 +121,13 @@ export default function OrderList() {
 
   const closeCreateModal = () => {
     setShowCreateModal(false);
-    setOrderInputData({ name: '', clientId: '', staffId: '', roomId: '', items: [] });
+    setOrderInputData({ name: '', clientId: '', staffId: '', roomId: '', items: [], reservationDate: '', startTime: '', endTime: '' });
     setStaffList([]);
     setRoomList([]);
     setServiceList([]);
+    setServiceSearch('');
+    setSelectedCategory('');
   };
-
 
   const handleCreateOrder = async () => {
     if (!orderInputData.name.trim()) {
@@ -126,6 +136,14 @@ export default function OrderList() {
     }
     if (orderInputData.items.length === 0) {
       alert('Please add at least one service.');
+      return;
+    }
+    if (!orderInputData.reservationDate) {
+      alert('Please select a reservation date.');
+      return;
+    }
+    if (!orderInputData.startTime) {
+      alert('Please select a time slot.');
       return;
     }
 
@@ -137,6 +155,9 @@ export default function OrderList() {
         staffId: orderInputData.staffId || undefined,
         roomId: orderInputData.roomId || undefined,
         items: orderInputData.items,
+        reservationDate: orderInputData.reservationDate,
+        startTime: orderInputData.startTime,
+        endTime: orderInputData.endTime,
       });
 
       if (result) {
@@ -152,7 +173,7 @@ export default function OrderList() {
     } finally {
       setCreateLoading(false);
     }
-};
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -175,6 +196,10 @@ export default function OrderList() {
 
   const filteredOrder = orderData.filter(order =>
     `${order.name}`.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredServices = serviceList.filter(s =>
+    s.name.toLowerCase().includes(serviceSearch.toLowerCase())
   );
 
   return (
@@ -268,7 +293,6 @@ export default function OrderList() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-400 text-sm font-medium">Total Revenue</p>
-                  {/* FIXED: was s.price, orders use order_total */}
                   <p className="text-3xl font-bold text-white mt-2">₱{orderData.reduce((sum, s) => sum + (parseFloat(s.order_total) || 0), 0).toFixed(2)}</p>
                 </div>
                 <span className="text-4xl">💰</span>
@@ -296,7 +320,6 @@ export default function OrderList() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-b border-purple-500/20">
-                    {/* FIXED: was CATEGORY, PRICE, DESCRIPTION */}
                     <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">NAME</th>
                     <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">STATUS</th>
                     <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">TOTAL</th>
@@ -328,13 +351,11 @@ export default function OrderList() {
                             <p className="text-white font-medium">{order.name}</p>
                           </div>
                         </td>
-                        {/* FIXED: was order.Service?.category */}
                         <td className="px-6 py-4">
                           <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300">
                             {order.order_status || 'N/A'}
                           </span>
                         </td>
-                        {/* FIXED: was order.Service?.price */}
                         <td className="px-6 py-4 text-white font-semibold">
                           ₱{parseFloat(order.order_total || '0').toFixed(2)}
                         </td>
@@ -382,7 +403,6 @@ export default function OrderList() {
                 <p className="text-slate-400 text-sm">Name</p>
                 <p className="text-white font-semibold text-lg">{checkOrderData.name}</p>
               </div>
-              {/* FIXED: was category, price, description */}
               <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
                 <p className="text-slate-400 text-sm">Status</p>
                 <p className="text-white font-semibold text-lg">{checkOrderData.order_status}</p>
@@ -405,12 +425,11 @@ export default function OrderList() {
         </div>
       )}
 
-
       {/* CREATE ORDER MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-lg border border-purple-500/30 shadow-2xl max-h-[90vh] overflow-y-auto">
-            
+
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -429,7 +448,6 @@ export default function OrderList() {
                 <label className="block text-slate-300 text-sm font-medium mb-2">Order Name *</label>
                 <input
                   type="text"
-                  name="name"
                   value={orderInputData.name}
                   onChange={(e) => setOrderInputData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter order name"
@@ -474,63 +492,122 @@ export default function OrderList() {
                 </select>
               </div>
 
-              {/* Services Picker */}
+              {/* Services - Category Filter + List */}
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Add Services *</label>
+
+                {/* Category Dropdown */}
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
+                >
+                  <option value="">All Categories</option>
+                  <option value="massage">Massage</option>
+                  <option value="spa">Spa</option>
+                  <option value="facial">Facial</option>
+                  <option value="body_wrap">Body Wrap</option>
+                  <option value="nail_care">Nail Care</option>
+                  <option value="aromatherapy">Aromatherapy</option>
+                  <option value="bundle">Bundle</option>
+                </select>
+
+                {/* Services List filtered by category */}
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {serviceList.map((service) => {
-                    const addedItem = orderInputData.items.find((i: any) => i.serviceId === service.id);
-                    return (
-                      <div key={service.id} className="flex items-center justify-between bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3">
-                        <div>
-                          <p className="text-white font-medium">{service.name}</p>
-                          <p className="text-slate-400 text-xs">₱{parseFloat(service.price).toFixed(2)}</p>
+                  {serviceList
+                    .filter(s => selectedCategory === '' || s.category === selectedCategory)
+                    .map((service) => {
+                      const alreadyAdded = orderInputData.items.find(i => i.serviceId === service.id);
+                      return (
+                        <div key={service.id} className="flex items-center justify-between bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3">
+                          <div>
+                            <p className="text-white text-sm font-medium">{service.name}</p>
+                            <p className="text-slate-400 text-xs">₱{parseFloat(service.price).toFixed(2)}</p>
+                          </div>
+                          {alreadyAdded ? (
+                            <span className="text-green-400 text-xs font-medium">✓ Added</span>
+                          ) : (
+                            <button
+                              onClick={() => addItem(service.id)}
+                              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
+                            >
+                              + Add
+                            </button>
+                          )}
                         </div>
-                        {addedItem ? (
+                      );
+                    })}
+                </div>
+
+                {/* Selected Services */}
+                {orderInputData.items.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-slate-400 text-xs">Selected Services:</p>
+                    {orderInputData.items.map((item) => {
+                      const service = serviceList.find(s => s.id === item.serviceId);
+                      return (
+                        <div key={item.serviceId} className="flex items-center justify-between bg-slate-700/30 border border-slate-600/50 rounded-lg px-3 py-2">
+                          <div>
+                            <p className="text-white text-sm">{service?.name}</p>
+                            <p className="text-purple-300 text-xs">₱{(parseFloat(service?.price || 0) * item.quantity).toFixed(2)}</p>
+                          </div>
                           <div className="flex items-center gap-2">
                             <input
                               type="number"
                               min={1}
-                              value={addedItem.quantity}
-                              onChange={(e) => updateQuantity(service.id, Number(e.target.value))}
-                              className="w-16 px-2 py-1 bg-slate-600 border border-slate-500 rounded text-white text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              value={item.quantity}
+                              onChange={(e) => updateQuantity(item.serviceId, Number(e.target.value))}
+                              className="w-14 px-2 py-1 bg-slate-600 border border-slate-500 rounded text-white text-center text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
                             />
                             <button
-                              onClick={() => removeItem(service.id)}
-                              className="text-red-400 hover:text-red-300 transition-colors"
+                              onClick={() => removeItem(item.serviceId)}
+                              className="text-red-400 hover:text-red-300"
                             >
-                              <X size={16} />
+                              <X size={14} />
                             </button>
                           </div>
-                        ) : (
-                          <button
-                            onClick={() => addItem(service.id)}
-                            className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
-                          >
-                            + Add
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Selected Items Summary */}
-              {orderInputData.items.length > 0 && (
-                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                  <p className="text-slate-400 text-sm mb-2">Selected Services ({orderInputData.items.length})</p>
-                  {orderInputData.items.map((item: any) => {
-                    const service = serviceList.find(s => s.id === item.serviceId);
-                    return (
-                      <div key={item.serviceId} className="flex justify-between text-sm">
-                        <p className="text-white">{service?.name} x{item.quantity}</p>
-                        <p className="text-purple-300">₱{(parseFloat(service?.price || 0) * item.quantity).toFixed(2)}</p>
-                      </div>
-                    );
-                  })}
+              {/* Reservation Date */}
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Reservation Date *</label>
+                <input
+                  type="date"
+                  value={orderInputData.reservationDate}
+                  onChange={(e) => setOrderInputData(prev => ({ ...prev, reservationDate: e.target.value }))}
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  disabled={createLoading}
+                />
+              </div>
+
+              {/* Time Slot Picker */}
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Select Time Slot *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {timeSlots.map((slot) => (
+                    <button
+                      key={slot.start}
+                      onClick={() => setOrderInputData(prev => ({
+                        ...prev,
+                        startTime: slot.start,
+                        endTime: slot.end
+                      }))}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                        orderInputData.startTime === slot.start
+                          ? 'bg-purple-600 border-purple-500 text-white'
+                          : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-purple-500'
+                      }`}
+                    >
+                      {slot.label}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
 
             </div>
 
