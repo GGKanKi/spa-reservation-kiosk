@@ -40,7 +40,6 @@ export default function OrderList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);
-  const [serviceSearch, setServiceSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
 
   const [staffList, setStaffList] = useState<any[]>([]);
@@ -125,7 +124,6 @@ export default function OrderList() {
     setStaffList([]);
     setRoomList([]);
     setServiceList([]);
-    setServiceSearch('');
     setSelectedCategory('');
   };
 
@@ -196,10 +194,6 @@ export default function OrderList() {
 
   const filteredOrder = orderData.filter(order =>
     `${order.name}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const filteredServices = serviceList.filter(s =>
-    s.name.toLowerCase().includes(serviceSearch.toLowerCase())
   );
 
   return (
