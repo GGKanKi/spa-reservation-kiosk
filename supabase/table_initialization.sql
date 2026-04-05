@@ -275,6 +275,9 @@ ALTER TABLE "Order"
     ADD COLUMN end_time time;
 
 
+ALTER TABLE "Service"
+    ADD COLUMN duration integer DEFAULT 60; -- Duration in minutes
+
 -- ============================================================================
 -- DONE!
 -- INITIALIZED TABLES FOR THE SPA RESERVATION SYSTEM WITH RLS POLICIES

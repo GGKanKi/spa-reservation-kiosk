@@ -131,6 +131,12 @@ export const ServiceSchema = z.object({
   description: z.string()
     .min(10, "Description must be 10+ characters")
     .max(500, "Description must be 500 characters or less"),
+
+  duration: z.number()
+    .int("Duration must be a whole number")
+    .min(15, "Duration must be at least 15 minutes")
+    .max(480, "Duration cannot exceed 8 hours")
+    .default(60),
 })
 
 // Service creation (no ID, no timestamps)

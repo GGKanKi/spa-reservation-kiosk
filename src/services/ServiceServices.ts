@@ -55,6 +55,7 @@ export const Services = {
                     category: validation.data.category,
                     price: Number(validation.data.price),
                     description: validation.data.description,
+                    duration: validation.data.duration,
                 }
             ])
             .select()

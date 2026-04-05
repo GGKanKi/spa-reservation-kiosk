@@ -101,6 +101,7 @@ export interface ServiceFormData {
   category: ServiceCategory
   price: number
   description: string
+  duration: number
 }
 
 // ============================================================================
