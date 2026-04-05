@@ -30,12 +30,18 @@ export default function ServiceManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);
-  const [serviceInputData, setServiceInput] = useState({
+  const [serviceInputData, setServiceInput] = useState<{
+    name: string;
+    category: string;
+    price: string;
+    description: string;
+    duration: number;
+  }>({
     name: '',
     category: '',
     price: '',
     description: '',
-
+    duration: 60,
   });
 
   const openCheckModal = (service: any) => {
@@ -50,12 +56,12 @@ export default function ServiceManagement() {
 
   const openCreateModal = () => {
     setShowCreateModal(true);
-    setServiceInput({ name: '', category: '', price: '', description: '' });
+    setServiceInput({ name: '', category: '', price: '', description: '', duration: 60 });
   };
 
   const closeCreateModal = () => {
     setShowCreateModal(false);
-    setServiceInput({ name: '', category: '', price: '', description: '' });
+    setServiceInput({ name: '', category: '', price: '', description: '', duration: 60 });
   };
 
 
@@ -73,6 +79,7 @@ export default function ServiceManagement() {
           category: serviceInputData.category.trim(),
           price: Number(serviceInputData.price),
           description: serviceInputData.description.trim(),
+          duration: Number(serviceInputData.duration),
       });
       if (result) {
         const updatedService = await Services.getServices();
@@ -457,6 +464,22 @@ export default function ServiceManagement() {
                     disabled={createLoading}
                   />
               </div>
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-2">
+                  Duration (minutes) *
+                </label>
+                <input
+                  type="number"
+                  name="duration"
+                  min={15}
+                  step={15}
+                  value={serviceInputData.duration}
+                  onChange={(e) => setServiceInput(prev => ({ ...prev, duration: Number(e.target.value) }))}
+                  placeholder="e.g. 60"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  disabled={createLoading}
+                />
+            </div>
             </div>
             
 
