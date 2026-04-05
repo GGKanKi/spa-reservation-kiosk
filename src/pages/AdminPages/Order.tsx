@@ -42,6 +42,9 @@ export default function OrderList() {
   const [createLoading, setCreateLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
 
+  const today = new Date().toISOString().split('T')[0];
+  const maxDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
   const [staffList, setStaffList] = useState<any[]>([]);
   const [roomList, setRoomList] = useState<any[]>([]);
   const [serviceList, setServiceList] = useState<any[]>([]);
@@ -127,6 +130,22 @@ export default function OrderList() {
     setSelectedCategory('');
   };
 
+  // Calculate total duration from selected services
+  const totalDuration = orderInputData.items.reduce((sum, item) => {
+    const service = serviceList.find(s => s.id === item.serviceId);
+    return sum + ((service?.duration || 60) * item.quantity);
+  }, 0);
+
+
+  // Helper to calculate end time
+  const calculateEndTime = (startTime: string, totalMinutes: number) => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMins = hours * 60 + minutes + totalMinutes;
+    const endHours = Math.floor(totalMins / 60);
+    const endMins = totalMins % 60;
+    return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+  };
+
   const handleCreateOrder = async () => {
     if (!orderInputData.name.trim()) {
       alert('Order name is required.');
@@ -172,6 +191,12 @@ export default function OrderList() {
       setCreateLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (orderInputData.startTime && totalDuration > 0) {
+      setOrderInputData(prev => ({ ...prev, endTime: calculateEndTime(orderInputData.startTime, totalDuration) }));
+    }
+  }, [orderInputData.startTime, totalDuration]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -567,6 +592,21 @@ export default function OrderList() {
                 )}
               </div>
 
+              {/* Duration Summary*/}
+              {orderInputData.items.length > 0 && (
+                <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/50 mt-3">
+                  <p className="text-slate-400 text-xs">Estimated Duration</p>
+                  <p className="text-white font-semibold">
+                    {Math.floor(totalDuration / 60)}h {totalDuration % 60}m
+                    {orderInputData.startTime && orderInputData.endTime && (
+                      <span className="text-purple-300 text-sm ml-2">
+                        ({orderInputData.startTime} - {orderInputData.endTime})
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+
               {/* Reservation Date */}
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Reservation Date *</label>
@@ -574,6 +614,8 @@ export default function OrderList() {
                   type="date"
                   value={orderInputData.reservationDate}
                   onChange={(e) => setOrderInputData(prev => ({ ...prev, reservationDate: e.target.value }))}
+                  min={today}
+                  max={maxDate}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   disabled={createLoading}
                 />
@@ -589,7 +631,6 @@ export default function OrderList() {
                       onClick={() => setOrderInputData(prev => ({
                         ...prev,
                         startTime: slot.start,
-                        endTime: slot.end
                       }))}
                       className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
                         orderInputData.startTime === slot.start
