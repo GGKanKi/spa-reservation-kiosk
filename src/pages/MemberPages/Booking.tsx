@@ -30,6 +30,10 @@ export default function MemberBooking() {
   const [createLoading, setCreateLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
 
+  const today = new Date().toISOString().split('T')[0];
+  const maxDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+
   const timeSlots = [
     { label: '9:00 AM - 10:00 AM', start: '09:00', end: '10:00' },
     { label: '10:00 AM - 11:00 AM', start: '10:00', end: '11:00' },
@@ -38,6 +42,44 @@ export default function MemberBooking() {
     { label: '2:00 PM - 3:00 PM', start: '14:00', end: '15:00' },
     { label: '3:00 PM - 4:00 PM', start: '15:00', end: '16:00' },
   ];
+
+    {/** SCHEDULE CHECKER */}
+    const [slotWarning, setSlotWarning] = useState('');
+  
+    const checkSlotConflict = async (date: string, startTime: string) => {
+      if (!date || !startTime) return;
+  
+      const {data: existingOrders} = await supabase
+        .from('Order')
+        .select('id, room_id, staff_id, reservation_date, start_time, end_time')
+        .eq('reservation_date', date)
+        .eq('start_time', startTime)
+        .eq('order_status', 'pending');
+  
+      if (existingOrders && existingOrders.length > 0) {
+        let conflicts = [];
+  
+        // Check room conflict if room is selected
+        if (orderInputData.roomId) {
+          const roomConflict = existingOrders.some((o) => o.room_id === orderInputData.roomId);
+          if (roomConflict) conflicts.push('room');
+        }
+  
+        // Check staff conflict if staff is selected
+        if (orderInputData.staffId) {
+          const staffConflict = existingOrders.some((o) => o.staff_id === orderInputData.staffId);
+          if (staffConflict) conflicts.push('staff');
+        }
+  
+        if (conflicts.length > 0) {
+          setSlotWarning(`⚠️ Conflict detected: ${conflicts.join(' and ')} already booked for this time slot`);
+        } else {
+          setSlotWarning('');
+        }
+      } else {
+        setSlotWarning('');
+      }
+    }
 
   
 
@@ -143,7 +185,24 @@ export default function MemberBooking() {
     setRoomList([]);
     setServiceList([]);
     setSelectedCategory('');
+    setSlotWarning('');
 
+  };
+
+  // Calculate total duration from selected services
+  const totalDuration = orderInputData.items.reduce((sum, item) => {
+    const service = serviceList.find(s => s.id === item.serviceId);
+    return sum + ((service?.duration || 60) * item.quantity);
+  }, 0);
+
+
+  // Helper to calculate end time
+  const calculateEndTime = (startTime: string, totalMinutes: number) => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMins = hours * 60 + minutes + totalMinutes;
+    const endHours = Math.floor(totalMins / 60);
+    const endMins = totalMins % 60;
+    return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
   };
 
 
@@ -209,6 +268,11 @@ export default function MemberBooking() {
       setCreateLoading(false);
     }
 };
+
+  useEffect(() => {
+    if (orderInputData.startTime && totalDuration > 0) {
+  setOrderInputData(prev => ({ ...prev, endTime: calculateEndTime(orderInputData.startTime, totalDuration) }));    }
+  }, [orderInputData.startTime, totalDuration])
 
   useEffect(() => {
     if (!userId) return;
@@ -502,7 +566,10 @@ export default function MemberBooking() {
                 <label className="block text-slate-300 text-sm font-medium mb-2">Assign Staff</label>
                 <select
                   value={orderInputData.staffId}
-                  onChange={(e) => setOrderInputData(prev => ({ ...prev, staffId: e.target.value }))}
+                  onChange={(e) => {
+                    setOrderInputData(prev => ({ ...prev, staffId: e.target.value }));
+                    checkSlotConflict(orderInputData.reservationDate, orderInputData.startTime);
+                  }}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   disabled={createLoading}
                 >
@@ -520,7 +587,10 @@ export default function MemberBooking() {
                 <label className="block text-slate-300 text-sm font-medium mb-2">Assign Room</label>
                 <select
                   value={orderInputData.roomId}
-                  onChange={(e) => setOrderInputData(prev => ({ ...prev, roomId: e.target.value }))}
+                  onChange={(e) => {
+                    setOrderInputData(prev => ({ ...prev, roomId: e.target.value }));
+                    checkSlotConflict(orderInputData.reservationDate, orderInputData.startTime);
+                  }}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   disabled={createLoading}
                 >
@@ -614,13 +684,33 @@ export default function MemberBooking() {
                 )}
               </div>
 
+              {/* Duration Summary*/}
+              {orderInputData.items.length > 0 && (
+                <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/50 mt-3">
+                  <p className="text-slate-400 text-xs">Estimated Duration</p>
+                  <p className="text-white font-semibold">
+                    {Math.floor(totalDuration / 60)}h {totalDuration % 60}m
+                    {orderInputData.startTime && orderInputData.endTime && (
+                      <span className="text-purple-300 text-sm ml-2">
+                        ({orderInputData.startTime} - {orderInputData.endTime})
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+
               {/* Reservation Date */}
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Reservation Date *</label>
                 <input
                   type="date"
                   value={orderInputData.reservationDate}
-                  onChange={(e) => setOrderInputData(prev => ({ ...prev, reservationDate: e.target.value }))}
+                  onChange={(e) => {
+                    setOrderInputData(prev => ({ ...prev, reservationDate: e.target.value }));
+                    checkSlotConflict(e.target.value, orderInputData.startTime);
+                  }}
+                  min={today}
+                  max={maxDate}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   disabled={createLoading}
                 />
@@ -633,11 +723,13 @@ export default function MemberBooking() {
                   {timeSlots.map((slot) => (
                     <button
                       key={slot.start}
-                      onClick={() => setOrderInputData(prev => ({
-                        ...prev,
-                        startTime: slot.start,
-                        endTime: slot.end
-                      }))}
+                      onClick={() => {
+                        setOrderInputData(prev => ({
+                          ...prev,
+                          startTime: slot.start,
+                        }));
+                        checkSlotConflict(orderInputData.reservationDate, slot.start);
+                      }}
                       className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
                         orderInputData.startTime === slot.start
                           ? 'bg-purple-600 border-purple-500 text-white'
@@ -650,13 +742,20 @@ export default function MemberBooking() {
                 </div>
               </div>
 
+              {/* Slot Warning */}
+              {slotWarning && (
+                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3">
+                  <p className="text-yellow-300 text-sm">{slotWarning}</p>
+                </div>
+              )}
+
             </div>
 
             {/* Buttons */}
             <div className="space-y-3">
               <button
                 onClick={handleCreateOrder}
-                disabled={createLoading || !orderInputData.name.trim() || orderInputData.items.length === 0}
+                disabled={!!(createLoading || !orderInputData.name.trim() || orderInputData.items.length === 0)}
                 className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {createLoading ? (
