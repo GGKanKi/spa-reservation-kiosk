@@ -49,6 +49,44 @@ export default function OrderList() {
   const [roomList, setRoomList] = useState<any[]>([]);
   const [serviceList, setServiceList] = useState<any[]>([]);
 
+  {/** SCHEDULE CHECKER */}
+  const [slotWarning, setSlotWarning] = useState('');
+
+  const checkSlotConflict = async (date: string, startTime: string) => {
+    if (!date || !startTime) return;
+
+    const {data: existingOrders} = await supabase
+      .from('Order')
+      .select('id, room_id, staff_id, reservation_date, start_time, end_time')
+      .eq('reservation_date', date)
+      .eq('start_time', startTime)
+      .eq('order_status', 'pending');
+
+    if (existingOrders && existingOrders.length > 0) {
+      let conflicts = [];
+
+      // Check room conflict if room is selected
+      if (orderInputData.roomId) {
+        const roomConflict = existingOrders.some((o) => o.room_id === orderInputData.roomId);
+        if (roomConflict) conflicts.push('room');
+      }
+
+      // Check staff conflict if staff is selected
+      if (orderInputData.staffId) {
+        const staffConflict = existingOrders.some((o) => o.staff_id === orderInputData.staffId);
+        if (staffConflict) conflicts.push('staff');
+      }
+
+      if (conflicts.length > 0) {
+        setSlotWarning(`⚠️ Conflict detected: ${conflicts.join(' and ')} already booked for this time slot`);
+      } else {
+        setSlotWarning('');
+      }
+    } else {
+      setSlotWarning('');
+    }
+  }
+
   const [orderInputData, setOrderInputData] = useState<{
     name: string;
     clientId: string;
@@ -128,6 +166,7 @@ export default function OrderList() {
     setRoomList([]);
     setServiceList([]);
     setSelectedCategory('');
+    setSlotWarning('');
   };
 
   // Calculate total duration from selected services
@@ -161,6 +200,10 @@ export default function OrderList() {
     }
     if (!orderInputData.startTime) {
       alert('Please select a time slot.');
+      return;
+    }
+    if (slotWarning) {
+      alert('Please resolve the scheduling conflict before creating the order.');
       return;
     }
 
@@ -480,7 +523,10 @@ export default function OrderList() {
                 <label className="block text-slate-300 text-sm font-medium mb-2">Assign Staff</label>
                 <select
                   value={orderInputData.staffId}
-                  onChange={(e) => setOrderInputData(prev => ({ ...prev, staffId: e.target.value }))}
+                  onChange={(e) => {
+                    setOrderInputData(prev => ({ ...prev, staffId: e.target.value }));
+                    checkSlotConflict(orderInputData.reservationDate, orderInputData.startTime);
+                  }}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   disabled={createLoading}
                 >
@@ -498,7 +544,10 @@ export default function OrderList() {
                 <label className="block text-slate-300 text-sm font-medium mb-2">Assign Room</label>
                 <select
                   value={orderInputData.roomId}
-                  onChange={(e) => setOrderInputData(prev => ({ ...prev, roomId: e.target.value }))}
+                  onChange={(e) => {
+                    setOrderInputData(prev => ({ ...prev, roomId: e.target.value }));
+                    checkSlotConflict(orderInputData.reservationDate, orderInputData.startTime);
+                  }}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   disabled={createLoading}
                 >
@@ -613,7 +662,10 @@ export default function OrderList() {
                 <input
                   type="date"
                   value={orderInputData.reservationDate}
-                  onChange={(e) => setOrderInputData(prev => ({ ...prev, reservationDate: e.target.value }))}
+                  onChange={(e) => {
+                    setOrderInputData(prev => ({ ...prev, reservationDate: e.target.value }));
+                    checkSlotConflict(e.target.value, orderInputData.startTime);
+                  }}
                   min={today}
                   max={maxDate}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -628,10 +680,13 @@ export default function OrderList() {
                   {timeSlots.map((slot) => (
                     <button
                       key={slot.start}
-                      onClick={() => setOrderInputData(prev => ({
-                        ...prev,
-                        startTime: slot.start,
-                      }))}
+                      onClick={() => {
+                        setOrderInputData(prev => ({
+                          ...prev,
+                          startTime: slot.start,
+                        }));
+                        checkSlotConflict(orderInputData.reservationDate, slot.start);
+                      }}
                       className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
                         orderInputData.startTime === slot.start
                           ? 'bg-purple-600 border-purple-500 text-white'
@@ -644,13 +699,20 @@ export default function OrderList() {
                 </div>
               </div>
 
+              {/* Slot Warning */}
+              {slotWarning && (
+                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3">
+                  <p className="text-yellow-300 text-sm">{slotWarning}</p>
+                </div>
+              )}
+
             </div>
 
             {/* Buttons */}
             <div className="space-y-3">
               <button
                 onClick={handleCreateOrder}
-                disabled={createLoading || !orderInputData.name.trim() || orderInputData.items.length === 0}
+                disabled={!!(createLoading || !orderInputData.name.trim() || orderInputData.items.length === 0)}
                 className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {createLoading ? (
