@@ -712,7 +712,7 @@ export default function OrderList() {
             <div className="space-y-3">
               <button
                 onClick={handleCreateOrder}
-                disabled={!!(createLoading || !orderInputData.name.trim() || orderInputData.items.length === 0 || slotWarning)}
+                disabled={!!(createLoading || !orderInputData.name.trim() || orderInputData.items.length === 0)}
                 className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {createLoading ? (
