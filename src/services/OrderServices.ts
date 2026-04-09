@@ -151,5 +151,57 @@ export const Orders = {
     }
 
     return { data: order, error: null }
+    },
+
+    async deleteOrder(id: string) {
+
+        if (!id) return {error: "Order ID is required", data: null};
+
+        const {data, error} = await supabase
+            .from('Order')
+            .delete()
+            .eq('id', id)
+        if (error) {
+            console.error('Error Message: ', error)
+        }
+
+        return {data, error: null}
+
+    },
+
+    async cancelOrder(id: string) {
+        if (!id) return {error: "Order ID is required", data: null};
+
+        const {data, error} = await supabase
+            .from('Order')
+            .update({order_status: 'cancelled'})
+            .eq('id', id)
+            .select()
+            .single()
+
+            if (error) {
+                console.error('Error Message: ', error)
+            }
+
+            return {data, error: null}
+
+    },
+
+    async updateOrderStatus(orderId: string, newStatus: string) {
+
+        if (!orderId || !newStatus) return {error: "Order ID and new status are required", data: null};
+
+        const {data, error} = await supabase
+            .from('Order')
+            .update({ order_status: newStatus })
+            .eq('id', orderId)
+            .select()
+            .single()
+        if (error) {
+            console.error('Error Message: ', error)
+            return {error: error.message, data: null}
+        }
+
+        return {data, error: null}
     }
 }

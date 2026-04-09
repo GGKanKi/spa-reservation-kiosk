@@ -72,7 +72,7 @@ export default function MemberBooking() {
         }
   
         if (conflicts.length > 0) {
-          setSlotWarning(`⚠️ Conflict detected: ${conflicts.join(' and ')} already booked for this time slot`);
+          setSlotWarning(` Conflict detected: ${conflicts.join(' and ')} already booked for this time slot`);
         } else {
           setSlotWarning('');
         }

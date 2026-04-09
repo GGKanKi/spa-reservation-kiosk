@@ -278,8 +278,10 @@ ALTER TABLE "Order"
 ALTER TABLE "Service"
     ADD COLUMN duration integer DEFAULT 60; -- Duration in minutes
 
+ALTER TABLE "Order"
+    DROP COLUMN created_at;
 -- ============================================================================
--- DONE!
 -- INITIALIZED TABLES FOR THE SPA RESERVATION SYSTEM WITH RLS POLICIES
 -- RUN IN SUPABASE DASHBOARD > SQL EDITOR
+-- GOING TO UPDATE WHEN THE SYSTEM IS FOR RELEASE
 -- ============================================================================
