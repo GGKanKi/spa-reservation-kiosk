@@ -6,7 +6,8 @@ import { Users } from "../../services/UserServices";
 import { Rooms } from "../../services/RoomService";
 import { Services } from "../../services/ServiceServices";
 import { Orders } from "../../services/OrderServices";
-import { Users as UsersIcon, Search, Edit, X, Plus } from "lucide-react";
+import { Users as UsersIcon, X, Plus, ArrowLeft, ShoppingCart, Sparkles } from "lucide-react";
+import type { ServiceCategory } from "../../types/database.types";
 
 const navItems = [
   { label: "DASHBOARD", path: "/member/dashboard", icon: "🏠" },
@@ -16,23 +17,54 @@ const navItems = [
   { label: "SETTINGS", path: "/member-settings", icon: "👤" }
 ];
 
+interface CategoryItem {
+  id: ServiceCategory;
+  name: string;
+  icon: string;
+  color: string;
+  description: string;
+}
+
+const CATEGORIES: CategoryItem[] = [
+  { id: 'massage', name: 'Massage', icon: '💆', color: 'from-blue-500 to-blue-600', description: 'Relaxing massage therapies' },
+  { id: 'spa', name: 'Spa', icon: '🧖', color: 'from-purple-500 to-purple-600', description: 'Full body spa treatments' },
+  { id: 'facial', name: 'Facial', icon: '✨', color: 'from-pink-500 to-pink-600', description: 'Skin care & facial treatments' },
+  { id: 'body_wrap', name: 'Body Wrap', icon: '🌿', color: 'from-green-500 to-green-600', description: 'Body wrapping treatments' },
+  { id: 'nail_care', name: 'Nail Care', icon: '💅', color: 'from-red-500 to-red-600', description: 'Nail and manicure services' },
+  { id: 'aromatherapy', name: 'Aromatherapy', icon: '🌸', color: 'from-amber-500 to-amber-600', description: 'Aromatherapy sessions' },
+  { id: 'bundle', name: 'Bundles', icon: '🎁', color: 'from-indigo-500 to-indigo-600', description: 'Package deals & bundles' }
+];
+
 export default function MemberBooking() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [orderData, setOrderData] = useState<any[]>([]);
-  const [checkOrderData, setCheckOrderData] = useState<any>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [createLoading, setCreateLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
+  const [allServices, setAllServices] = useState<any[]>([]);
+  const [cart, setCart] = useState<any[]>([]);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const [checkoutData, setCheckoutData] = useState<{
+    name: string;
+    reservationDate: string;
+    startTime: string;
+    staffId: string;
+    roomId: string;
+  }>({
+    name: '',
+    reservationDate: '',
+    startTime: '',
+    staffId: '',
+    roomId: '',
+  });
+
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [roomList, setRoomList] = useState<any[]>([]);
 
   const today = new Date().toISOString().split('T')[0];
   const maxDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
 
   const timeSlots = [
     { label: '9:00 AM - 10:00 AM', start: '09:00', end: '10:00' },
@@ -43,47 +75,16 @@ export default function MemberBooking() {
     { label: '3:00 PM - 4:00 PM', start: '15:00', end: '16:00' },
   ];
 
-    {/** SCHEDULE CHECKER */}
-    const [slotWarning, setSlotWarning] = useState('');
-  
-    const checkSlotConflict = async (date: string, startTime: string) => {
-      if (!date || !startTime) return;
-  
-      const {data: existingOrders} = await supabase
-        .from('Order')
-        .select('id, room_id, staff_id, reservation_date, start_time, end_time')
-        .eq('reservation_date', date)
-        .eq('start_time', startTime)
-        .eq('order_status', 'pending');
-  
-      if (existingOrders && existingOrders.length > 0) {
-        let conflicts = [];
-  
-        // Check room conflict if room is selected
-        if (orderInputData.roomId) {
-          const roomConflict = existingOrders.some((o) => o.room_id === orderInputData.roomId);
-          if (roomConflict) conflicts.push('room');
-        }
-  
-        // Check staff conflict if staff is selected
-        if (orderInputData.staffId) {
-          const staffConflict = existingOrders.some((o) => o.staff_id === orderInputData.staffId);
-          if (staffConflict) conflicts.push('staff');
-        }
-  
-        if (conflicts.length > 0) {
-          setSlotWarning(` Conflict detected: ${conflicts.join(' and ')} already booked for this time slot`);
-        } else {
-          setSlotWarning('');
-        }
-      } else {
-        setSlotWarning('');
-      }
-    }
+  // Get services for selected category
+  const categoryServices = selectedCategory 
+    ? allServices.filter(s => s.category === selectedCategory)
+    : [];
 
-  
+  // Calculate cart totals
+  const cartTotal = cart.reduce((sum, item) => sum + (item.service.price * item.quantity), 0);
+  const estimatedDuration = cart.reduce((sum, item) => sum + ((item.service.duration || 60) * item.quantity), 0);
 
-  {/**User ID Fetch */}
+  // User ID Fetch
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -94,212 +95,130 @@ export default function MemberBooking() {
     getCurrentUser();
   }, []);
 
-  {/**DropDown Data */}
-  const [staffList, setStaffList] = useState<any[]>([]);
-  const [roomList, setRoomList] = useState<any[]>([]);
-  const [serviceList, setServiceList] = useState<any[]>([]);
+  // Fetch all services on mount
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const services = await Services.getServices();
+        setAllServices(Array.isArray(services) ? services : []);
+      } catch (err) {
+        console.error('Error fetching services:', err);
+      }
+    };
+    fetchServices();
+  }, []);
 
-  const [orderInputData, setOrderInputData] = useState<{
-    name: string;
-    clientId: string;
-    staffId: string;
-    roomId: string;
-    items: { serviceId: string; quantity: number }[];
-    reservationDate: string;
-    startTime: string;
-    endTime: string;
-  }>({
-    name: '',
-    clientId: '',
-    staffId: '',
-    roomId: '',
-    items: [],
-    reservationDate: '',
-    startTime: '',
-    endTime: '',
-  });
-
-  const openCheckModal = (order: any) => {
-    setCheckOrderData(order);
-    setShowModal(true);
+  // Add service to cart
+  const addToCart = (service: any) => {
+    const exists = cart.find(item => item.service.id === service.id);
+    if (exists) {
+      setCart(cart.map(item =>
+        item.service.id === service.id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCart([...cart, { service, quantity: 1 }]);
+    }
   };
 
-  const closeCheckModal = () => {
-    setShowModal(false);
-    setCheckOrderData(null);
+  // Remove service from cart
+  const removeFromCart = (serviceId: string) => {
+    setCart(cart.filter(item => item.service.id !== serviceId));
   };
 
-  const openCreateModal = async () => {
-    setShowCreateModal(true);
-    setOrderInputData({ name: '', clientId: '', staffId: '', roomId: '', items: [], reservationDate: '', startTime: '', endTime: '' });
+  // Update quantity
+  const updateCartQuantity = (serviceId: string, quantity: number) => {
+    if (quantity === 0) {
+      removeFromCart(serviceId);
+    } else {
+      setCart(cart.map(item =>
+        item.service.id === serviceId
+          ? { ...item, quantity }
+          : item
+      ));
+    }
+  };
 
-    // Fetch staff, rooms, services for dropdowns
+  // Open checkout modal
+  const openCheckout = async () => {
+    if (cart.length === 0) {
+      alert('Please add services to your cart');
+      return;
+    }
+
     const staff = await Users.getUserByRole('staff');
-    console.log('Staff data:', staff);
-    // Update Rooms With Availability = Available
     const rooms = await Rooms.getAvailableRooms('available');
-    const services = await Services.getServices();
 
     setStaffList(staff || []);
     setRoomList(Array.isArray(rooms) ? rooms : []);
-    setServiceList(Array.isArray(services) ? services : []);
-
-    // Auto set clientId from logged in user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setOrderInputData(prev => ({ ...prev, clientId: user.id }));
-    }
+    setShowCheckoutModal(true);
   };
 
-  // Helper to add a service to items
-  const addItem = (serviceId: string) => {
-    setOrderInputData(prev => {
-      const exists = prev.items.find((i: any) => i.serviceId === serviceId);
-      if (exists) return prev; // already added
-      return { ...prev, items: [...prev.items, { serviceId, quantity: 1 }] };
-    });
-  };
-
-  // Helper to remove a service from items
-  const removeItem = (serviceId: string) => {
-    setOrderInputData(prev => ({
-      ...prev,
-      items: prev.items.filter((i: any) => i.serviceId !== serviceId)
-    }));
-  };
-
-  // Helper to update quantity
-  const updateQuantity = (serviceId: string, quantity: number) => {
-    setOrderInputData(prev => ({
-      ...prev,
-      items: prev.items.map((i: any) =>
-        i.serviceId === serviceId ? { ...i, quantity } : i
-      )
-    }));
-  };
-
-  const closeCreateModal = () => {
-    setShowCreateModal(false);
-    setOrderInputData({ name: '', clientId: '', staffId: '', roomId: '', items: [], reservationDate: '', startTime: '', endTime: '' });
-    setStaffList([]);
-    setRoomList([]);
-    setServiceList([]);
-    setSelectedCategory('');
-    setSlotWarning('');
-
-  };
-
-  // Calculate total duration from selected services
-  const totalDuration = orderInputData.items.reduce((sum, item) => {
-    const service = serviceList.find(s => s.id === item.serviceId);
-    return sum + ((service?.duration || 60) * item.quantity);
-  }, 0);
-
-
-  // Helper to calculate end time
-  const calculateEndTime = (startTime: string, totalMinutes: number) => {
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const totalMins = hours * 60 + minutes + totalMinutes;
-    const endHours = Math.floor(totalMins / 60);
-    const endMins = totalMins % 60;
-    return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
-  };
-
-
-  const handleCreateOrder = async () => {
-    if (!orderInputData.name.trim()) {
-      alert('Order name is required.');
+  // Handle checkout
+  const handleCheckout = async () => {
+    if (!checkoutData.name.trim()) {
+      alert('Please enter a booking name');
       return;
     }
-    if (orderInputData.items.length === 0) {
-      alert('Please add at least one service.');
+    if (!checkoutData.reservationDate) {
+      alert('Please select a reservation date');
       return;
     }
-    if (!orderInputData.reservationDate) {
-      alert('Please select a reservation date.');
-      return;
-    }
-    if (!orderInputData.startTime) {
-      alert('Please select a start time.');
-      return;
-    }
-    if (!orderInputData.endTime) {
-      alert('Please select an end time.');
+    if (!checkoutData.startTime) {
+      alert('Please select a time slot');
       return;
     }
 
     if (!userId) return;
 
-    // Re-check current auth user immediately before final create step
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      alert('User not authenticated. Please sign in again.');
-      return;
-    }
-
-    const currentUserId = user.id;
-
-    setCreateLoading(true);
+    setCheckoutLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('User not authenticated');
+        return;
+      }
+
+      // Calculate end time
+      const [hours, minutes] = checkoutData.startTime.split(':').map(Number);
+      const totalMins = hours * 60 + minutes + estimatedDuration;
+      const endHours = Math.floor(totalMins / 60);
+      const endMins = totalMins % 60;
+      const endTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+
       const result = await Orders.createOrder({
-        orderName: orderInputData.name.trim(),
-        clientId: currentUserId,
-        staffId: orderInputData.staffId || undefined,
-        roomId: orderInputData.roomId || undefined,
-        items: orderInputData.items,
-        reservationDate: orderInputData.reservationDate,
-        startTime: orderInputData.startTime,
-        endTime: orderInputData.endTime,
+        orderName: checkoutData.name,
+        clientId: user.id,
+        staffId: checkoutData.staffId || undefined,
+        roomId: checkoutData.roomId || undefined,
+        items: cart.map(item => ({ serviceId: item.service.id, quantity: item.quantity })),
+        reservationDate: checkoutData.reservationDate,
+        startTime: checkoutData.startTime,
+        endTime: endTime,
       });
 
       if (result.error) {
-        console.error('Order creation error:', result.error);
-        alert(`Failed to create order: ${result.error}`);
+        alert(`Failed to create booking: ${result.error}`);
       } else {
-        const updated = await Orders.getOrderByUserId(userId);
-        setOrderData(Array.isArray(updated.data) ? updated.data : []);
-        closeCreateModal();
-        alert('Order created successfully!');
+        alert('Booking created successfully!');
+        setCart([]);
+        setCheckoutData({ name: '', reservationDate: '', startTime: '', staffId: '', roomId: '' });
+        setShowCheckoutModal(false);
+        setSelectedCategory(null);
       }
     } catch (err) {
-      console.error('Error creating order:', err);
-      alert('Error creating order.');
+      console.error('Error creating booking:', err);
+      alert('Error creating booking');
     } finally {
-      setCreateLoading(false);
+      setCheckoutLoading(false);
     }
-};
+  };
 
-  useEffect(() => {
-    if (orderInputData.startTime && totalDuration > 0) {
-  setOrderInputData(prev => ({ ...prev, endTime: calculateEndTime(orderInputData.startTime, totalDuration) }));    }
-  }, [orderInputData.startTime, totalDuration])
-
-  useEffect(() => {
-    if (!userId) return;
-
-
-    const fetchOrders = async () => {
-      try {
-        const results = await Orders.getOrderByUserId(userId);
-        console.log('Fetched data:', results.data);
-        if (results.error) {
-          console.error(results.error);
-          setOrderData([]);
-        } else {
-          setOrderData(Array.isArray(results.data) ? results.data : []);
-        }
-      } catch (err) {
-        console.log('Error Message', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, [userId]);
-
-  const filteredOrder = orderData.filter(order =>
-    `${order.name}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const closeCheckout = () => {
+    setShowCheckoutModal(false);
+    setCheckoutData({ name: '', reservationDate: '', startTime: '', staffId: '', roomId: '' });
+  };
 
   return (
     <div className="flex w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -351,229 +270,232 @@ export default function MemberBooking() {
       {/* Main Content */}
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8 flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                📦 Orders Management
-              </h1>
-              <p className="text-slate-400">Manage and control all orders in the system</p>
-            </div>
-            <button
-              onClick={openCreateModal}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center gap-2 shadow-lg"
-            >
-              <Plus size={20} />
-              Create Order
-            </button>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm font-medium">Total Orders</p>
-                  <p className="text-3xl font-bold text-white mt-2">{orderData.length}</p>
-                </div>
-                <span className="text-4xl">📦</span>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm font-medium">Pending Orders</p>
-                  <p className="text-3xl font-bold text-white mt-2">{orderData.filter(o => o.order_status === 'pending').length}</p>
-                </div>
-                <span className="text-4xl">⏳</span>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm font-medium">Total Revenue</p>
-                  {/* FIXED: was s.price, orders use order_total */}
-                  <p className="text-3xl font-bold text-white mt-2">₱{orderData.reduce((sum, s) => sum + (parseFloat(s.order_total) || 0), 0).toFixed(2)}</p>
-                </div>
-                <span className="text-4xl">💰</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl mb-8">
-            <div className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-4 py-3 border border-slate-700">
-              <Search size={20} className="text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search orders by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 bg-transparent outline-none text-white placeholder-slate-500"
-              />
-            </div>
-          </div>
-
-          {/* Orders Table */}
-          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg border border-purple-500/20 shadow-xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-b border-purple-500/20">
-                    {/* FIXED: was CATEGORY, PRICE, DESCRIPTION */}
-                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">NAME</th>
-                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">STATUS</th>
-                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">TOTAL</th>
-                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-slate-400">
-                        <div className="flex justify-center">
-                          <div className="animate-spin">⚙️</div>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : filteredOrder.length > 0 ? (
-                    filteredOrder.map((order, idx) => (
-                      <tr
-                        key={order.id}
-                        className={`border-b border-slate-700/50 hover:bg-slate-700/30 transition-all duration-200 ${
-                          idx % 2 === 0 ? "bg-slate-800/20" : "bg-slate-800/40"
-                        }`}
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                              {order.name?.[0] || '?'}
-                            </div>
-                            <p className="text-white font-medium">{order.name}</p>
-                          </div>
-                        </td>
-                        {/* FIXED: was order.Service?.category */}
-                        <td className="px-6 py-4">
-                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300">
-                            {order.order_status || 'N/A'}
-                          </span>
-                        </td>
-                        {/* FIXED: was order.Service?.price */}
-                        <td className="px-6 py-4 text-white font-semibold">
-                          ₱{parseFloat(order.order_total || '0').toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <button
-                            onClick={() => openCheckModal(order)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-sm font-medium"
-                          >
-                            <Edit size={16} />
-                            EDIT
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-slate-400">
-                        No Orders found
-                      </td>
-                    </tr>
+          {!selectedCategory ? (
+            <>
+              {/* Header */}
+              <div className="mb-12">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+                      <Sparkles size={40} className="text-purple-400" />
+                      Book a Service
+                    </h1>
+                    <p className="text-slate-400 text-lg">Choose a category and explore our premium services</p>
+                  </div>
+                  {cart.length > 0 && (
+                    <button
+                      onClick={openCheckout}
+                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center gap-2 shadow-lg relative"
+                    >
+                      <ShoppingCart size={20} />
+                      Cart ({cart.length})
+                    </button>
                   )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                </div>
+              </div>
+
+              {/* Category Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {CATEGORIES.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className="group h-48 bg-gradient-to-br from-slate-800 to-slate-700 rounded-xl border border-purple-500/20 shadow-lg overflow-hidden hover:shadow-2xl hover:border-purple-500/50 transition-all duration-300 transform hover:scale-105"
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                    <div className="relative h-full flex flex-col items-center justify-center p-6 z-10">
+                      <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
+                        {category.icon}
+                      </div>
+                      <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">
+                        {category.name}
+                      </h2>
+                      <p className="text-slate-400 text-sm text-center group-hover:text-slate-300 transition-colors">
+                        {category.description}
+                      </p>
+                      <div className="mt-4 text-purple-400 group-hover:text-purple-300 transition-colors flex items-center gap-1">
+                        <span className="text-sm font-medium">Browse</span>
+                        <span>→</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Service Catalog View */}
+              <div className="mb-8">
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors mb-8 text-lg"
+                >
+                  <ArrowLeft size={20} />
+                  Back to Categories
+                </button>
+
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h1 className="text-4xl font-bold text-white mb-2">
+                      {CATEGORIES.find(c => c.id === selectedCategory)?.name} Services
+                    </h1>
+                    <p className="text-slate-400">
+                      Select services to add to your booking
+                    </p>
+                  </div>
+                  {cart.length > 0 && (
+                    <button
+                      onClick={openCheckout}
+                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center gap-2 shadow-lg"
+                    >
+                      <ShoppingCart size={20} />
+                      Cart ({cart.length})
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Services Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {categoryServices.length > 0 ? (
+                  categoryServices.map((service) => {
+                    const inCart = cart.find(item => item.service.id === service.id);
+                    return (
+                      <div
+                        key={service.id}
+                        className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg border border-purple-500/20 shadow-lg overflow-hidden hover:shadow-xl hover:border-purple-500/50 transition-all duration-300"
+                      >
+                        <div className="p-6">
+                          <h3 className="text-xl font-bold text-white mb-2">{service.name}</h3>
+                          <p className="text-slate-400 text-sm mb-4">{service.description}</p>
+
+                          <div className="space-y-3 mb-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-400 text-sm">Price</span>
+                              <span className="text-purple-300 font-semibold text-lg">
+                                ₱{parseFloat(service.price).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-400 text-sm">Duration</span>
+                              <span className="text-slate-300 text-sm">
+                                {service.duration || 60} minutes
+                              </span>
+                            </div>
+                          </div>
+
+                          {inCart ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between bg-slate-700/50 rounded-lg p-2">
+                                <button
+                                  onClick={() => updateCartQuantity(service.id, inCart.quantity - 1)}
+                                  className="text-slate-400 hover:text-white transition-colors px-2"
+                                >
+                                  −
+                                </button>
+                                <span className="text-white font-semibold">{inCart.quantity}</span>
+                                <button
+                                  onClick={() => updateCartQuantity(service.id, inCart.quantity + 1)}
+                                  className="text-slate-400 hover:text-white transition-colors px-2"
+                                >
+                                  +
+                                </button>
+                              </div>
+                              <button
+                                onClick={() => removeFromCart(service.id)}
+                                className="w-full py-2 bg-red-600/20 text-red-300 rounded-lg hover:bg-red-600/30 transition-colors text-sm font-medium"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => addToCart(service)}
+                              className="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-semibold flex items-center justify-center gap-2"
+                            >
+                              <Plus size={18} />
+                              Add to Cart
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-slate-400 text-lg">No services available in this category</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </main>
 
-      {/* Edit Modal */}
-      {showModal && checkOrderData && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-md border border-purple-500/30 shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Edit size={24} className="text-purple-400" />
-                Order Details
-              </h2>
-              <button onClick={closeCheckModal} className="text-slate-400 hover:text-white transition-colors">
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="space-y-4 mb-6">
-              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                <p className="text-slate-400 text-sm">Name</p>
-                <p className="text-white font-semibold text-lg">{checkOrderData.name}</p>
-              </div>
-              {/* FIXED: was category, price, description */}
-              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                <p className="text-slate-400 text-sm">Status</p>
-                <p className="text-white font-semibold text-lg">{checkOrderData.order_status}</p>
-              </div>
-              <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                <p className="text-slate-400 text-sm">Total</p>
-                <p className="text-white font-semibold text-lg">₱{parseFloat(checkOrderData.order_total || '0').toFixed(2)}</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                onClick={closeCheckModal}
-                className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 transition-all duration-200"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {/* CREATE ORDER MODAL */}
-      {showCreateModal && (
+      {/* Checkout Modal */}
+      {showCheckoutModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-lg border border-purple-500/30 shadow-2xl max-h-[90vh] overflow-y-auto">
-
-            {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Plus size={24} className="text-purple-400" />
-                Create New Order
+                <ShoppingCart size={24} className="text-purple-400" />
+                Confirm Booking
               </h2>
-              <button onClick={closeCreateModal} className="text-slate-400 hover:text-white transition-colors">
+              <button onClick={closeCheckout} className="text-slate-400 hover:text-white transition-colors">
                 <X size={24} />
               </button>
             </div>
 
-            <div className="space-y-4 mb-6">
+            {/* Cart Summary */}
+            <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 mb-6">
+              <h3 className="text-purple-300 font-semibold mb-3">Booking Summary</h3>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {cart.map((item) => (
+                  <div key={item.service.id} className="flex justify-between text-sm">
+                    <span className="text-slate-300">
+                      {item.service.name} x{item.quantity}
+                    </span>
+                    <span className="text-purple-300 font-medium">
+                      ₱{(item.service.price * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-slate-600/50 mt-3 pt-3">
+                <div className="flex justify-between font-bold text-white">
+                  <span>Total:</span>
+                  <span className="text-purple-300">₱{cartTotal.toFixed(2)}</span>
+                </div>
+                <div className="text-slate-400 text-sm mt-2">
+                  Estimated Duration: {Math.floor(estimatedDuration / 60)}h {estimatedDuration % 60}m
+                </div>
+              </div>
+            </div>
 
-              {/* Order Name */}
+            <div className="space-y-4 mb-6">
+              {/* Booking Name */}
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Order Name *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Booking Name *</label>
                 <input
                   type="text"
-                  value={orderInputData.name}
-                  onChange={(e) => setOrderInputData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter order name"
+                  value={checkoutData.name}
+                  onChange={(e) => setCheckoutData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter booking name"
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  disabled={createLoading}
+                  disabled={checkoutLoading}
                 />
               </div>
 
-              {/* Staff Dropdown */}
+              {/* Staff Selection */}
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Assign Staff</label>
                 <select
-                  value={orderInputData.staffId}
-                  onChange={(e) => {
-                    setOrderInputData(prev => ({ ...prev, staffId: e.target.value }));
-                    checkSlotConflict(orderInputData.reservationDate, orderInputData.startTime);
-                  }}
+                  value={checkoutData.staffId}
+                  onChange={(e) => setCheckoutData(prev => ({ ...prev, staffId: e.target.value }))}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  disabled={createLoading}
+                  disabled={checkoutLoading}
                 >
-                  <option value="">Select staff</option>
+                  <option value="">Select staff (optional)</option>
                   {staffList.map((staff) => (
                     <option key={staff.id} value={staff.id}>
                       {staff.first_name} {staff.last_name}
@@ -582,19 +504,16 @@ export default function MemberBooking() {
                 </select>
               </div>
 
-              {/* Room Dropdown */}
+              {/* Room Selection */}
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Assign Room</label>
                 <select
-                  value={orderInputData.roomId}
-                  onChange={(e) => {
-                    setOrderInputData(prev => ({ ...prev, roomId: e.target.value }));
-                    checkSlotConflict(orderInputData.reservationDate, orderInputData.startTime);
-                  }}
+                  value={checkoutData.roomId}
+                  onChange={(e) => setCheckoutData(prev => ({ ...prev, roomId: e.target.value }))}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  disabled={createLoading}
+                  disabled={checkoutLoading}
                 >
-                  <option value="">Select room</option>
+                  <option value="">Select room (optional)</option>
                   {roomList.map((room) => (
                     <option key={room.id} value={room.id}>
                       {room.name}
@@ -603,185 +522,73 @@ export default function MemberBooking() {
                 </select>
               </div>
 
-              {/* Services - Category Filter + List */}
-              <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Add Services *</label>
-
-                {/* Category Dropdown */}
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 mb-3"
-                >
-                  <option value="">All Categories</option>
-                  <option value="massage">Massage</option>
-                  <option value="spa">Spa</option>
-                  <option value="facial">Facial</option>
-                  <option value="body_wrap">Body Wrap</option>
-                  <option value="nail_care">Nail Care</option>
-                  <option value="aromatherapy">Aromatherapy</option>
-                  <option value="bundle">Bundle</option>
-                </select>
-
-                {/* Services List filtered by category */}
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {serviceList
-                    .filter(s => selectedCategory === '' || s.category === selectedCategory)
-                    .map((service) => {
-                      const alreadyAdded = orderInputData.items.find(i => i.serviceId === service.id);
-                      return (
-                        <div key={service.id} className="flex items-center justify-between bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3">
-                          <div>
-                            <p className="text-white text-sm font-medium">{service.name}</p>
-                            <p className="text-slate-400 text-xs">₱{parseFloat(service.price).toFixed(2)}</p>
-                          </div>
-                          {alreadyAdded ? (
-                            <span className="text-green-400 text-xs font-medium">✓ Added</span>
-                          ) : (
-                            <button
-                              onClick={() => addItem(service.id)}
-                              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
-                            >
-                              + Add
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-
-                {/* Selected Services */}
-                {orderInputData.items.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    <p className="text-slate-400 text-xs">Selected Services:</p>
-                    {orderInputData.items.map((item) => {
-                      const service = serviceList.find(s => s.id === item.serviceId);
-                      return (
-                        <div key={item.serviceId} className="flex items-center justify-between bg-slate-700/30 border border-slate-600/50 rounded-lg px-3 py-2">
-                          <div>
-                            <p className="text-white text-sm">{service?.name}</p>
-                            <p className="text-purple-300 text-xs">₱{(parseFloat(service?.price || 0) * item.quantity).toFixed(2)}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              min={1}
-                              value={item.quantity}
-                              onChange={(e) => updateQuantity(item.serviceId, Number(e.target.value))}
-                              className="w-14 px-2 py-1 bg-slate-600 border border-slate-500 rounded text-white text-center text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
-                            />
-                            <button
-                              onClick={() => removeItem(item.serviceId)}
-                              className="text-red-400 hover:text-red-300"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Duration Summary*/}
-              {orderInputData.items.length > 0 && (
-                <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/50 mt-3">
-                  <p className="text-slate-400 text-xs">Estimated Duration</p>
-                  <p className="text-white font-semibold">
-                    {Math.floor(totalDuration / 60)}h {totalDuration % 60}m
-                    {orderInputData.startTime && orderInputData.endTime && (
-                      <span className="text-purple-300 text-sm ml-2">
-                        ({orderInputData.startTime} - {orderInputData.endTime})
-                      </span>
-                    )}
-                  </p>
-                </div>
-              )}
-
               {/* Reservation Date */}
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Reservation Date *</label>
                 <input
                   type="date"
-                  value={orderInputData.reservationDate}
-                  onChange={(e) => {
-                    setOrderInputData(prev => ({ ...prev, reservationDate: e.target.value }));
-                    checkSlotConflict(e.target.value, orderInputData.startTime);
-                  }}
+                  value={checkoutData.reservationDate}
+                  onChange={(e) => setCheckoutData(prev => ({ ...prev, reservationDate: e.target.value }))}
                   min={today}
                   max={maxDate}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  disabled={createLoading}
+                  disabled={checkoutLoading}
                 />
               </div>
 
-              {/* Time Slot Picker */}
+              {/* Time Slot */}
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Select Time Slot *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Time Slot *</label>
                 <div className="grid grid-cols-2 gap-2">
                   {timeSlots.map((slot) => (
                     <button
                       key={slot.start}
-                      onClick={() => {
-                        setOrderInputData(prev => ({
-                          ...prev,
-                          startTime: slot.start,
-                        }));
-                        checkSlotConflict(orderInputData.reservationDate, slot.start);
-                      }}
+                      onClick={() => setCheckoutData(prev => ({ ...prev, startTime: slot.start }))}
                       className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                        orderInputData.startTime === slot.start
+                        checkoutData.startTime === slot.start
                           ? 'bg-purple-600 border-purple-500 text-white'
                           : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-purple-500'
                       }`}
+                      disabled={checkoutLoading}
                     >
                       {slot.label}
                     </button>
                   ))}
                 </div>
               </div>
-
-              {/* Slot Warning */}
-              {slotWarning && (
-                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3">
-                  <p className="text-yellow-300 text-sm">{slotWarning}</p>
-                </div>
-              )}
-
             </div>
 
             {/* Buttons */}
             <div className="space-y-3">
               <button
-                onClick={handleCreateOrder}
-                disabled={!!(createLoading || !orderInputData.name.trim() || orderInputData.items.length === 0)}
+                onClick={handleCheckout}
+                disabled={!!(checkoutLoading || !checkoutData.name.trim() || !checkoutData.reservationDate || !checkoutData.startTime)}
                 className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
               >
-                {createLoading ? (
+                {checkoutLoading ? (
                   <>
                     <div className="animate-spin">⚙️</div>
-                    Creating...
+                    Confirming...
                   </>
                 ) : (
                   <>
-                    <Plus size={20} />
-                    Create Order
+                    <ShoppingCart size={20} />
+                    Confirm Booking
                   </>
                 )}
               </button>
               <button
-                onClick={closeCreateModal}
-                disabled={createLoading}
+                onClick={closeCheckout}
+                disabled={checkoutLoading}
                 className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 Cancel
               </button>
             </div>
-
           </div>
         </div>
       )}
     </div>
   );
 }
+
