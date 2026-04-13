@@ -549,6 +549,13 @@ export default function MemberBooking() {
                           <div className="flex items-center gap-2 whitespace-nowrap">
                             <button
                               onClick={() => handleCancelOrder(order.id)}
+                              className="inline-flex items-center gap-2 px-4 py-2 border-2 border-green-500 bg-transparent text-green-500 rounded-lg hover:bg-green-500 hover:text-white transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <X size={16} />
+                              EDIT
+                            </button>
+                            <button
+                              onClick={() => handleCancelOrder(order.id)}
                               disabled={order.order_status === 'completed' || order.order_status === 'cancelled'}
                               className="inline-flex items-center gap-2 px-4 py-2 border-2 border-red-500 bg-transparent text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             >

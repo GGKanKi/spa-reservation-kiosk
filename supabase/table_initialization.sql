@@ -251,9 +251,14 @@ WITH CHECK (
 );
 
 
+
 -- ============================
 -- PAYMENT TABLE AND POLICIES
 -- ============================
+-- AUTO GENERATE REFERENCE NUMBER
+CREATE SEQUENCE IF NOT EXISTS payment_reference_seq START 1;
+
+
 CREATE TABLE IF NOT EXISTS public."Payment"(
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id uuid REFERENCES public."Order" (id) ON DELETE SET NULL,
@@ -261,9 +266,26 @@ CREATE TABLE IF NOT EXISTS public."Payment"(
     amount NUMERIC,
     payment_method TEXT,
     payment_status TEXT DEFAULT 'pending',
+    transaction_id TEXT,
     paid_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT now() -- Added this for easier sorting later!
+    reference_number TEXT DEFAULT ('PAY-' || to_char(now(), 'YYYYMMDD') || '-' || LPAD(nextval('payment_ref_seq')::text, 4, '0')),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    update_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- AUTO UPDATE TIMESTAMP
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.update_at = now();
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_payment_timestamp
+    BEFORE UPDATE ON public."Payment"
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_modified_column();
 
 -- ENABLE RLS POLICIES
 ALTER TABLE public."Payment" ENABLE ROW LEVEL SECURITY;
@@ -312,6 +334,8 @@ ALTER TABLE "Service"
 
 ALTER TABLE "Order"
     DROP COLUMN created_at;
+
+
 -- ============================================================================
 -- INITIALIZED TABLES FOR THE SPA RESERVATION SYSTEM WITH RLS POLICIES
 -- RUN IN SUPABASE DASHBOARD > SQL EDITOR
