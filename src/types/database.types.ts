@@ -32,6 +32,7 @@ export type RoomStatus =
   | 'maintenance'
 
 export type PaymentMethod = 
+  | 'cash'
   | 'credit_card' 
   | 'debit_card' 
   | 'cash' 

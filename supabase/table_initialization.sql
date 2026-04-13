@@ -251,6 +251,38 @@ WITH CHECK (
 );
 
 
+-- ============================
+-- PAYMENT TABLE AND POLICIES
+-- ============================
+CREATE TABLE IF NOT EXISTS public."Payment"(
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id uuid REFERENCES public."Order" (id) ON DELETE SET NULL,
+    client_id uuid REFERENCES public."Users" (id) ON DELETE SET NULL,
+    amount NUMERIC,
+    payment_method TEXT,
+    payment_status TEXT DEFAULT 'pending',
+    paid_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now() -- Added this for easier sorting later!
+);
+
+-- ENABLE RLS POLICIES
+ALTER TABLE public."Payment" ENABLE ROW LEVEL SECURITY;
+
+-- VIEW POLICY
+CREATE POLICY "Users can view their payments"
+ON public."Payment"
+FOR SELECT
+TO authenticated
+USING (auth.uid() = client_id);
+
+-- MANAGE POLICY (INSERT/UPDATE/DELETE)
+CREATE POLICY "Users can manage their own payments"
+ON public."Payment"
+FOR ALL
+TO authenticated
+USING (auth.uid() = client_id)
+WITH CHECK (auth.uid() = client_id);
+
 -- Index For Searching Orders by Client base on Time
 CREATE INDEX IF NOT EXISTS idx_reservation_time ON public."Reservation"(reservation_time);
 
