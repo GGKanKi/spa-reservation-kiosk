@@ -50,6 +50,27 @@ export default function MemberBooking() {
   const [roomList, setRoomList] = useState<any[]>([]);
   const [serviceList, setServiceList] = useState<any[]>([]);
 
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [orderDetails, setOrderDetails] = useState<{
+    name: string;
+    clientId: string;
+    staffId: string;
+    roomId: string;
+    items: { serviceId: string; quantity: number }[];
+    reservationDate: string;
+    startTime: string;
+    endTime: string;
+  }>({
+    name: '',
+    clientId: '',
+    staffId: '',
+    roomId: '',
+    items: [],
+    reservationDate: '',
+    startTime: '',
+    endTime: '',
+  });
+
   const [orderInputData, setOrderInputData] = useState<{
     name: string;
     clientId: string;
@@ -312,6 +333,46 @@ export default function MemberBooking() {
     }
   };
 
+  // ===== PAYMENT =====
+  const handlePayOrder = async (orderId: string) => {
+    if (!orderId) return;
+
+
+    
+  };
+
+  // ===== CHECK ORDER DETAIL ======
+  const checkOrderDetail = async (orderId: string) => {
+    if (!orderId) return;
+
+    setLoading(true);
+
+    try {
+      const result = await Orders.selectOrder(orderId);
+      if (result.error) {
+        alert('Failed to fetch order details.');
+      } else {
+        setCheckOrderData(result.data);
+        setOrderDetails({
+          name: result?.data.name || '',
+          clientId: result?.data.client_id || '',
+          staffId: result?.data.staff_id || '',
+          roomId: result?.data.room_id || '',
+          items: result?.data.items || [],
+          reservationDate: result?.data.reservation_date || '',
+          startTime: result?.data.start_time || '',
+          endTime: result?.data.end_time || '',
+        });
+        setShowDetailModal(true);
+      }
+    } catch (err) {
+      alert('Unable to fetch order detail.')
+    } finally {
+      setLoading(false);
+    }
+
+  };
+
   // ===== DELETE & CANCEL =====
   const handleDeleteOrder = async (orderId: string) => {
     if (!orderId) return;
@@ -439,13 +500,17 @@ export default function MemberBooking() {
               </h1>
               <p className="text-slate-400">Manage your spa orders and reservations</p>
             </div>
-            <button
+            {/** 
+             *             
+             * <button
               onClick={openCreateModal}
               className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center gap-2 shadow-lg"
             >
               <Plus size={20} />
               Create Order
             </button>
+            */}
+
           </div>
 
           {/* Stats Cards */}
@@ -548,11 +613,18 @@ export default function MemberBooking() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2 whitespace-nowrap">
                             <button
-                              onClick={() => handleCancelOrder(order.id)}
+                              onClick={() => handlePayOrder(order.id)}
                               className="inline-flex items-center gap-2 px-4 py-2 border-2 border-green-500 bg-transparent text-green-500 rounded-lg hover:bg-green-500 hover:text-white transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <X size={16} />
-                              EDIT
+                              PAYMENT
+                            </button>
+                            <button
+                              onClick={() => checkOrderDetail(order.id)}
+                              className="inline-flex items-center gap-2 px-4 py-2 border-2 border-blue-500 bg-transparent text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <X size={16} />
+                              VIEW
                             </button>
                             <button
                               onClick={() => handleCancelOrder(order.id)}
@@ -982,11 +1054,158 @@ export default function MemberBooking() {
               >
                 Cancel
               </button>
-            </div>
-
+            </div>            
           </div>
         </div>
       )}
+
+                  {/* ORDER DETAIL MODAL */}
+            {showDetailModal && checkOrderData && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-xl border border-purple-500/30 shadow-2xl max-h-[90vh] overflow-y-auto">
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                      🧾 Order Details
+                    </h2>
+                    <button
+                      onClick={() => { setShowDetailModal(false); setCheckOrderData(null); }}
+                      className="text-slate-400 hover:text-white transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
+                      checkOrderData.order_status === 'completed'
+                        ? 'bg-green-500/20 text-green-300'
+                        : checkOrderData.order_status === 'cancelled'
+                        ? 'bg-red-500/20 text-red-300'
+                        : 'bg-blue-500/20 text-blue-300'
+                    }`}>
+                      {checkOrderData.order_status?.toUpperCase() || 'N/A'}
+                    </span>
+                    <span className="text-slate-400 text-sm">#{checkOrderData.id?.slice(0, 8)}...</span>
+                  </div>
+
+                  {/* Info Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/40">
+                      <p className="text-slate-400 text-xs font-medium mb-1">Order Name</p>
+                      <p className="text-white font-semibold">{checkOrderData.name || 'N/A'}</p>
+                    </div>
+                    <div className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/40">
+                      <p className="text-slate-400 text-xs font-medium mb-1">Total Amount</p>
+                      <p className="text-green-400 font-bold text-lg">₱{parseFloat(checkOrderData.order_total || '0').toFixed(2)}</p>
+                    </div>
+                    <div className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/40">
+                      <p className="text-slate-400 text-xs font-medium mb-1">Reservation Date</p>
+                      <p className="text-white font-semibold">{checkOrderData.reservation_date || 'N/A'}</p>
+                    </div>
+                    <div className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/40">
+                      <p className="text-slate-400 text-xs font-medium mb-1">Time Slot</p>
+                      <p className="text-white font-semibold">
+                        {checkOrderData.start_time && checkOrderData.end_time
+                          ? `${checkOrderData.start_time} – ${checkOrderData.end_time}`
+                          : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Staff & Room */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/40">
+                      <p className="text-slate-400 text-xs font-medium mb-1">👤 Assigned Staff</p>
+                      <p className="text-white font-semibold text-sm">
+                        {checkOrderData.staff
+                          ? `${checkOrderData.staff.first_name} ${checkOrderData.staff.last_name}`
+                          : checkOrderData.staff_id
+                          ? checkOrderData.staff_id.slice(0, 8) + '...'
+                          : 'Not assigned'}
+                      </p>
+                    </div>
+                    <div className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/40">
+                      <p className="text-slate-400 text-xs font-medium mb-1">🚪 Room</p>
+                      <p className="text-white font-semibold text-sm">
+                        {checkOrderData.room?.name || (checkOrderData.room_id ? checkOrderData.room_id.slice(0, 8) + '...' : 'Not assigned')}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Services / Items */}
+                  {orderDetails.items && orderDetails.items.length > 0 && (
+                    <div className="mb-6">
+                      <p className="text-slate-300 text-sm font-semibold mb-3">✨ Services</p>
+                      <div className="space-y-2">
+                        {orderDetails.items.map((item: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between bg-slate-700/30 border border-slate-600/40 rounded-lg px-4 py-3"
+                          >
+                            <div>
+                              <p className="text-white text-sm font-medium">
+                                {item.service?.name || item.serviceId || `Service ${idx + 1}`}
+                              </p>
+                              {item.service?.duration && (
+                                <p className="text-slate-400 text-xs">{item.service.duration} mins</p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-purple-300 text-sm font-semibold">
+                                {item.quantity > 1 && <span className="text-slate-400 text-xs mr-1">x{item.quantity}</span>}
+                                {item.service?.price
+                                  ? `₱${(parseFloat(item.service.price) * (item.quantity || 1)).toFixed(2)}`
+                                  : ''}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment Section */}
+                  <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-xl p-4 mb-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-slate-400 text-xs font-medium mb-1">Payment Status</p>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          checkOrderData.payment_status === 'paid'
+                            ? 'bg-green-500/20 text-green-300'
+                            : 'bg-yellow-500/20 text-yellow-300'
+                        }`}>
+                          {(checkOrderData.payment_status || 'unpaid').toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-slate-400 text-xs mb-1">Order Total</p>
+                        <p className="text-white text-2xl font-bold">₱{parseFloat(checkOrderData.order_total || '0').toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handlePayOrder(checkOrderData.id)}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+                    >
+                      💳 Pay Now
+                    </button>
+                    <button
+                      onClick={() => { setShowDetailModal(false); setCheckOrderData(null); }}
+                      className="flex-1 px-4 py-3 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 transition-all duration-200 text-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+          )}
     </div>
   );
 }
