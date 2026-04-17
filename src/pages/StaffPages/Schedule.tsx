@@ -4,12 +4,13 @@ import { Users } from "../../services/UserServices";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 import { Orders } from "../../services/OrderServices";
+import { Users as UsersIcon, X, Calendar, Edit } from "lucide-react";
 
 const navItems = [
-  { label: "DASHBOARD", path: "/staff/dashboard" },
-  { label: "SCHEDULE", path: "/staff/schedule" },
-  { label: "TRANSACTIONS", path: "/staff/transactions" },
-  { label: "SETTINGS", path: "/staff-settings"}
+  { label: "DASHBOARD", path: "/staff/dashboard", icon: "🏠" },
+  { label: "SCHEDULE", path: "/staff/schedule", icon: "📅" },
+  { label: "TRANSACTIONS", path: "/staff/transactions", icon: "💳" },
+  { label: "SETTINGS", path: "/staff-settings", icon: "👤" }
 ];
 
 export default function ClientList() {
@@ -82,89 +83,120 @@ export default function ClientList() {
     fetchRoomAssigned();
   }, [userId]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex w-full min-h-screen">
-      <aside className="w-[248px] min-w-[248px] min-h-screen flex flex-col bg-[#D1C4E9] border-r-[5px] border-[#9F0AA2] rounded-tr-[10px] rounded-br-[10px]">
-        <div className="w-full h-[158px] bg-[#D9D9D9] rounded-tr-[10px] flex-shrink-0" />
+    <div className="flex w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Sidebar */}
+      <aside className="w-[280px] min-w-[280px] min-h-screen flex flex-col bg-slate-950 border-r-2 border-purple-500/20 shadow-2xl">
+        <div className="p-6 border-b border-purple-500/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <UsersIcon size={24} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-white font-bold text-lg">Staff Panel</h1>
+              <p className="text-purple-400 text-xs">SPA Management</p>
+            </div>
+          </div>
+        </div>
 
-        <nav className="flex flex-col gap-[18px] mt-[136px] px-[20px]">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`
-                  w-full h-[56px] flex items-center justify-center
-                  rounded-[10px] border-[3px] border-black
-                  font-['Konkhmer_Sleokchher'] text-[20px] text-black leading-[120%]
-                  transition-colors duration-150
-                  ${isActive ? "bg-[#9F0AA2] text-white border-[#9F0AA2]" : "bg-[#D9D9D9] hover:bg-[#c8b8e8]"}
-                `}
+                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${isActive
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                    : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
+                  }`}
               >
-                {item.label}
+                <span className="text-lg">{item.icon}</span>
+                <span className="font-medium text-sm">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="flex-1" />
-
-        <div className="px-[20px] pb-[28px]">
+        <div className="p-4 border-t border-purple-500/10">
           <button
             onClick={() => {
               supabase.auth.signOut();
               navigate("/login");
             }}
-            className="w-full h-[56px] flex items-center justify-center
-              rounded-[10px] border-[3px] border-black bg-[#FF6B6B] hover:bg-[#EE5A52]
-              font-['Konkhmer_Sleokchher'] text-[20px] text-white leading-[120%]
-              transition-colors duration-150"
+            className="w-full h-[48px] flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
           >
+            <X size={18} />
             LOGOUT
           </button>
         </div>
       </aside>
 
-      <main className="flex-1 p-10 bg-white">
-        <div className="bg-white border-[3px] border-black rounded-[20px] p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <h1 className="font-['Konkhmer_Sleokchher'] text-[32px] mb-6">ASSIGNED ROOMS</h1>
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <div className="max-w-7xl mx-auto space-y-8">
           
-          <table className="w-full border-[2px] border-black rounded-[10px] overflow-hidden">
-            <thead className="bg-[#D1C4E9]">
-              <tr>
-                <th className="p-4 border-b-2 border-black font-bold">NAME</th>
-                <th className="p-4 border-b-2 border-black font-bold">CLIENT NAME</th>
-                <th className="p-4 border-b-2 border-black font-bold">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assignedRoom && assignedRoom.length > 0 ? (
-                assignedRoom.map((room) => (
-                  <tr key={room.id}>
-                    <td className="p-4 border-b border-black">{room.name}</td>
-                    <td className="p-4 border-b border-black">{clientNames[room.client_id] || "Fetching name..."}</td>
-                    <td className="p-4 border-b border-black">
-                      <button 
-                        onClick={() => openCheckModal(room)}
-                        className="text-[#9F0AA2] font-bold"
-                      >
-                        EDIT
-                      </button>
-                    </td>
+          {/* Header */}
+          <div className="mb-2">
+            <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+              <Calendar className="text-purple-400" size={36} />
+              Assigned Rooms
+            </h1>
+            <p className="text-slate-400">View and manage the assigned rooms schedule.</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg border border-purple-500/20 shadow-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-max">
+                <thead>
+                  <tr className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-b border-purple-500/20">
+                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">NAME</th>
+                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">CLIENT NAME</th>
+                    <th className="px-6 py-4 text-left text-purple-300 font-semibold text-sm">ACTIONS</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td className="p-4 border-b border-black text-center" colSpan={3}>
-                    No assigned rooms found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {assignedRoom && assignedRoom.length > 0 ? (
+                    assignedRoom.map((room, idx) => (
+                      <tr 
+                        key={room.id}
+                        className={`border-b border-slate-700/50 hover:bg-slate-700/30 transition-all duration-200 ${
+                          idx % 2 === 0 ? "bg-slate-800/20" : "bg-slate-800/40"
+                        }`}
+                      >
+                        <td className="px-6 py-4 text-white font-medium">{room.name}</td>
+                        <td className="px-6 py-4 text-slate-300">{clientNames[room.client_id] || "Fetching name..."}</td>
+                        <td className="px-6 py-4">
+                          <button 
+                            onClick={() => openCheckModal(room)}
+                            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-purple-500 bg-transparent text-purple-400 rounded-lg hover:bg-purple-500 hover:text-white transition-all duration-300 text-sm font-semibold"
+                          >
+                            <Edit size={16} />
+                            EDIT
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-8 text-center text-slate-400">
+                        No assigned rooms found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </main>
     </div>
