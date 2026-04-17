@@ -9,41 +9,42 @@
 
 export type UserRole = 'member' | 'vip' | 'admin' | 'staff'
 
-export type ServiceCategory = 
-  | 'massage' 
-  | 'spa' 
-  | 'facial' 
-  | 'body_wrap' 
-  | 'nail_care' 
-  | 'aromatherapy' 
+export type ServiceCategory =
+  | 'massage'
+  | 'spa'
+  | 'facial'
+  | 'body_wrap'
+  | 'nail_care'
+  | 'aromatherapy'
   | 'bundle'
 
-export type OrderStatus = 
-  | 'pending' 
-  | 'confirmed' 
-  | 'completed' 
+export type OrderStatus =
+  | 'pending'
+  | 'payed'
+  | 'confirmed'
+  | 'completed'
   | 'cancelled'
 
-export type RoomStatus = 
-  | 'available' 
-  | 'cleaning' 
-  | 'closed' 
-  | 'reserved' 
+export type RoomStatus =
+  | 'available'
+  | 'cleaning'
+  | 'closed'
+  | 'reserved'
   | 'maintenance'
 
-export type PaymentMethod = 
+export type PaymentMethod =
   | 'cash'
-  | 'credit_card' 
-  | 'debit_card' 
-  | 'cash' 
-  | 'bank_transfer' 
-  | 'gcash' 
+  | 'credit_card'
+  | 'debit_card'
+  | 'cash'
+  | 'bank_transfer'
+  | 'gcash'
   | 'paypal'
 
-export type PaymentStatus = 
-  | 'pending' 
-  | 'completed' 
-  | 'failed' 
+export type PaymentStatus =
+  | 'pending'
+  | 'completed'
+  | 'failed'
   | 'refunded'
 
 // ============================================================================
