@@ -5,7 +5,6 @@ import ForgotPassword from './pages/Public/ForgotPassword';
 import ResetPassword from './pages/Public/ResetPassword';
 import MemberDashboard from './pages/MemberPages/Dashboard';
 import MemberBooking from './pages/MemberPages/Booking';
-import MemberReservations from './pages/MemberPages/Reservation';
 import MemberOrders from './pages/MemberPages/Order';
 import AdminDashboard from './pages/AdminPages/Dashboard';
 import StaffDashboard from './pages/StaffPages/Dashboard';
@@ -36,11 +35,10 @@ function App() {
         <Route path="/" element={<LoginPage />} />
 
         {/* MEMBER PAGES */}
-        <Route path="/member/dashboard" element={<MemberDashboard />} /> 
+        <Route path="/member/dashboard" element={<MemberDashboard />} />
         <Route path="/book-a-service" element={<MemberBooking />} />
-        <Route path="/reservations" element={<MemberReservations />} />
         <Route path="/orders" element={<MemberOrders />} />
-        <Route path="/member-settings" element={<MemberSettings /> } />
+        <Route path="/member-settings" element={<MemberSettings />} />
 
         {/* ADMIN PAGES */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -57,7 +55,7 @@ function App() {
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
         <Route path="/staff/schedule" element={<Schedule />} />
         <Route path="/staff/transactions" element={<Transaction />} />
-        <Route path="/staff-settings" element={<StaffSettings /> } />
+        <Route path="/staff-settings" element={<StaffSettings />} />
 
 
         <Route path="*" element={<Navigate to="/login" replace />} />

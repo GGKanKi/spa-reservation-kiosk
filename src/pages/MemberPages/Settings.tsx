@@ -10,7 +10,6 @@ type UserProfile = Awaited<ReturnType<typeof Users.getUserProfile>>;
 const navItems = [
   { label: "DASHBOARD", path: "/member/dashboard", icon: "🏠" },
   { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: "✨" },
-  { label: "RESERVATIONS", path: "/reservations", icon: "📅" },
   { label: "ORDERS", path: "/orders", icon: "🛍️" },
   { label: "SETTINGS", path: "/member-settings", icon: "👤" }
 ];
@@ -61,7 +60,7 @@ export default function Settings() {
         phone_num: formData.phone_num,
       };
 
-       if (formData.password && formData.password.length >= 6) {
+      if (formData.password && formData.password.length >= 6) {
         updatePayload.password = formData.password;
       } else if (formData.password && formData.password.length < 6) {
         setErrorMessage("Password must be at least 6 characters");
@@ -176,11 +175,10 @@ export default function Settings() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${
-                  isActive
+                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${isActive
                     ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
                     : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
-                }`}
+                  }`}
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="font-medium text-sm">{item.label}</span>
@@ -249,7 +247,7 @@ export default function Settings() {
             {/* Form Content */}
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                
+
                 {/* First Name */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-3">
@@ -261,11 +259,10 @@ export default function Settings() {
                     value={formData.first_name}
                     onChange={handleInputChange}
                     disabled={!editing}
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
-                      editing
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
                         ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                         : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                    }`}
+                      }`}
                   />
                 </div>
 
@@ -280,11 +277,10 @@ export default function Settings() {
                     value={formData.middle_name}
                     onChange={handleInputChange}
                     disabled={!editing}
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
-                      editing
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
                         ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                         : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                    }`}
+                      }`}
                   />
                 </div>
 
@@ -299,11 +295,10 @@ export default function Settings() {
                     value={formData.last_name}
                     onChange={handleInputChange}
                     disabled={!editing}
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
-                      editing
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
                         ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                         : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                    }`}
+                      }`}
                   />
                 </div>
 
@@ -331,11 +326,10 @@ export default function Settings() {
                     value={formData.phone_num}
                     onChange={handleInputChange}
                     disabled={!editing}
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
-                      editing
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
                         ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                         : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                    }`}
+                      }`}
                   />
                 </div>
 
@@ -351,14 +345,13 @@ export default function Settings() {
                     onChange={handleInputChange}
                     disabled={!editing}
                     placeholder="Enter new password..."
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
-                      editing
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
                         ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                         : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                    }`}
+                      }`}
                   />
                 </div>
-                              </div>
+              </div>
 
               {/* Action Buttons */}
               <div className="flex gap-4 justify-end pt-6 border-t border-slate-700">
