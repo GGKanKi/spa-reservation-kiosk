@@ -11,7 +11,6 @@ import { Users as UsersIcon, Search, Edit, X, Plus } from "lucide-react";
 const navItems = [
   { label: "DASHBOARD", path: "/member/dashboard", icon: "🏠" },
   { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: "✨" },
-  { label: "RESERVATIONS", path: "/reservations", icon: "📅" },
   { label: "ORDERS", path: "/orders", icon: "🛍️" },
   { label: "SETTINGS", path: "/member-settings", icon: "👤" }
 ];
@@ -1205,7 +1204,7 @@ export default function MemberBooking() {
 
                 </div>
               </div>
-          )}
+            )}
     </div>
   );
 }

@@ -12,7 +12,6 @@ import type { ServiceCategory } from "../../types/database.types";
 const navItems = [
   { label: "DASHBOARD", path: "/member/dashboard", icon: "🏠" },
   { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: "✨" },
-  { label: "RESERVATIONS", path: "/reservations", icon: "📅" },
   { label: "ORDERS", path: "/orders", icon: "🛍️" },
   { label: "SETTINGS", path: "/member-settings", icon: "👤" }
 ];
@@ -76,7 +75,7 @@ export default function MemberBooking() {
   ];
 
   // Get services for selected category
-  const categoryServices = selectedCategory 
+  const categoryServices = selectedCategory
     ? allServices.filter(s => s.category === selectedCategory)
     : [];
 
@@ -243,11 +242,10 @@ export default function MemberBooking() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${
-                  isActive
+                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${isActive
                     ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
                     : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
-                }`}
+                  }`}
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="font-medium text-sm">{item.label}</span>
@@ -544,11 +542,10 @@ export default function MemberBooking() {
                     <button
                       key={slot.start}
                       onClick={() => setCheckoutData(prev => ({ ...prev, startTime: slot.start }))}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                        checkoutData.startTime === slot.start
+                      className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${checkoutData.startTime === slot.start
                           ? 'bg-purple-600 border-purple-500 text-white'
                           : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-purple-500'
-                      }`}
+                        }`}
                       disabled={checkoutLoading}
                     >
                       {slot.label}
