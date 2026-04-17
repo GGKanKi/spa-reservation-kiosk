@@ -47,7 +47,7 @@ export default function ClientList() {
     const fetchRoomAssigned = async () => {
       try {
         setLoading(true);
-        const results = await Orders.getOrders();
+        const results = await Orders.getPayedOrders('payed');
 
         if (results.error) {
           console.error(results.error);
@@ -115,8 +115,8 @@ export default function ClientList() {
                 key={item.path}
                 to={item.path}
                 className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${isActive
-                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                    : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
+                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                  : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
                   }`}
               >
                 <span className="text-lg">{item.icon}</span>
@@ -143,7 +143,7 @@ export default function ClientList() {
       {/* Main Content */}
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto space-y-8">
-          
+
           {/* Header */}
           <div className="mb-2">
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
@@ -166,16 +166,15 @@ export default function ClientList() {
                 <tbody>
                   {assignedRoom && assignedRoom.length > 0 ? (
                     assignedRoom.map((room, idx) => (
-                      <tr 
+                      <tr
                         key={room.id}
-                        className={`border-b border-slate-700/50 hover:bg-slate-700/30 transition-all duration-200 ${
-                          idx % 2 === 0 ? "bg-slate-800/20" : "bg-slate-800/40"
-                        }`}
+                        className={`border-b border-slate-700/50 hover:bg-slate-700/30 transition-all duration-200 ${idx % 2 === 0 ? "bg-slate-800/20" : "bg-slate-800/40"
+                          }`}
                       >
                         <td className="px-6 py-4 text-white font-medium">{room.name}</td>
                         <td className="px-6 py-4 text-slate-300">{clientNames[room.client_id] || "Fetching name..."}</td>
                         <td className="px-6 py-4">
-                          <button 
+                          <button
                             onClick={() => openCheckModal(room)}
                             className="inline-flex items-center gap-2 px-4 py-2 border-2 border-purple-500 bg-transparent text-purple-400 rounded-lg hover:bg-purple-500 hover:text-white transition-all duration-300 text-sm font-semibold"
                           >
