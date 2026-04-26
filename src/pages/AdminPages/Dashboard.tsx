@@ -2,18 +2,23 @@ import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useState, useEffect } from "react";
-import { Users as UsersIcon, Home, Zap, ShoppingCart, TrendingUp, ArrowRight, X } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+
+// React Icons
+import { MdDashboard, MdPeople, MdSettings, MdPayment, MdAssessment } from "react-icons/md";
+import { FaUserTie, FaSpa, FaDoorOpen, FaBoxOpen, FaSignOutAlt } from "react-icons/fa";
+import { BsLightningChargeFill, BsArrowRightShort } from "react-icons/bs";
 
 const navItems = [
-  { label: "DASHBOARD", path: "/admin/dashboard", icon: "📊" },
-  { label: "USERS", path: "/admin/user-management", icon: "👥" },
-  { label: "STAFFS", path: "/admin/staff-management", icon: "👔" },
-  { label: "SERVICES", path: "/admin/service-management", icon: "🔧" },
-  { label: "ROOMS", path: "/admin/room-management", icon: "🏠" },
-  { label: "ORDERS", path: "/admin/orders", icon: "📦" },
-  { label: "PAYMENTS", path: "/admin/payments", icon: "💳" },
-  { label: "REPORTS", path: "/admin/reports", icon: "📈" },
-  { label: "SETTINGS", path: "/admin/settings", icon: "⚙️" },
+  { label: "DASHBOARD", path: "/admin/dashboard", icon: <MdDashboard size={20} /> },
+  { label: "USERS", path: "/admin/user-management", icon: <MdPeople size={20} /> },
+  { label: "STAFFS", path: "/admin/staff-management", icon: <FaUserTie size={20} /> },
+  { label: "SERVICES", path: "/admin/service-management", icon: <FaSpa size={20} /> },
+  { label: "ROOMS", path: "/admin/room-management", icon: <FaDoorOpen size={20} /> },
+  { label: "ORDERS", path: "/admin/orders", icon: <FaBoxOpen size={20} /> },
+  { label: "PAYMENTS", path: "/admin/payments", icon: <MdPayment size={20} /> },
+  { label: "REPORTS", path: "/admin/reports", icon: <MdAssessment size={20} /> },
+  { label: "SETTINGS", path: "/admin/settings", icon: <MdSettings size={20} /> },
 ];
 
 export default function AdminDashboard() {
@@ -42,12 +47,11 @@ export default function AdminDashboard() {
     getUserData();
   }, []);
 
-  // Mock data - Replace with actual API calls
   const dashboardStats = [
-    { label: "Total Users", value: "156", icon: "👥", color: "from-blue-600 to-blue-400" },
-    { label: "Active Rooms", value: "24", icon: "🏠", color: "from-green-600 to-green-400" },
-    { label: "Total Services", value: "18", icon: "🔧", color: "from-purple-600 to-purple-400" },
-    { label: "Pending Orders", value: "8", icon: "📦", color: "from-orange-600 to-orange-400" },
+    { label: "Total Users", value: "156", icon: <MdPeople size={36} className="text-blue-400" />, color: "from-blue-600 to-blue-400" },
+    { label: "Active Rooms", value: "24", icon: <FaDoorOpen size={36} className="text-green-400" />, color: "from-green-600 to-green-400" },
+    { label: "Total Services", value: "18", icon: <FaSpa size={36} className="text-purple-400" />, color: "from-purple-600 to-purple-400" },
+    { label: "Pending Orders", value: "8", icon: <FaBoxOpen size={36} className="text-orange-400" />, color: "from-orange-600 to-orange-400" },
   ];
 
   const recentActivity = [
@@ -65,7 +69,7 @@ export default function AdminDashboard() {
         <div className="p-6 border-b border-purple-500/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <UsersIcon size={24} className="text-white" />
+              <FaSpa size={20} className="text-white" />
             </div>
             <div>
               <h1 className="text-white font-bold text-lg">Admin Panel</h1>
@@ -87,7 +91,7 @@ export default function AdminDashboard() {
                     : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
+                <span>{item.icon}</span>
                 <span className="font-medium text-sm">{item.label}</span>
               </Link>
             );
@@ -102,7 +106,7 @@ export default function AdminDashboard() {
             }}
             className="w-full h-[48px] flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
           >
-            <X size={18} />
+            <FaSignOutAlt size={18} />
             LOGOUT
           </button>
         </div>
@@ -114,7 +118,8 @@ export default function AdminDashboard() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-              📊 Dashboard
+              <MdDashboard size={40} className="text-purple-400" />
+              Dashboard
             </h1>
             <p className="text-slate-400">Welcome back, {fullName}!</p>
           </div>
@@ -128,7 +133,7 @@ export default function AdminDashboard() {
                     <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
                     <p className="text-3xl font-bold text-white mt-2">{stat.value}</p>
                   </div>
-                  <span className="text-4xl">{stat.icon}</span>
+                  {stat.icon}
                 </div>
               </div>
             ))}
@@ -138,27 +143,48 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
               <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                ⚡ Quick Actions
+                <BsLightningChargeFill className="text-yellow-400" />
+                Quick Actions
               </h3>
               <div className="flex flex-col gap-3">
-                <button 
+                <button
                   onClick={() => navigate("/admin/orders")}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-between">
-                  View All Orders
+                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <FaBoxOpen size={16} />
+                    View All Orders
+                  </span>
                   <ArrowRight size={18} />
                 </button>
-                <button 
+                <button
                   onClick={() => navigate("/admin/user-management")}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 flex items-center justify-between">
-                  Manage Users
+                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <MdPeople size={16} />
+                    Manage Users
+                  </span>
                   <ArrowRight size={18} />
                 </button>
-                <button className="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-between">
-                  View Payments
+                <button
+                  onClick={() => navigate("/admin/payments")}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <MdPayment size={16} />
+                    View Payments
+                  </span>
                   <ArrowRight size={18} />
                 </button>
-                <button className="w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg font-semibold hover:from-orange-700 hover:to-red-700 transition-all duration-200 flex items-center justify-between">
-                  Generate Reports
+                <button
+                  onClick={() => navigate("/admin/reports")}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg font-semibold hover:from-orange-700 hover:to-red-700 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <MdAssessment size={16} />
+                    Generate Reports
+                  </span>
                   <ArrowRight size={18} />
                 </button>
               </div>
@@ -167,7 +193,8 @@ export default function AdminDashboard() {
             {/* System Status */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg p-6 border border-purple-500/20 shadow-xl">
               <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                🔧 System Status
+                <MdSettings className="text-slate-400" />
+                System Status
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg border border-slate-600/50">
@@ -194,7 +221,8 @@ export default function AdminDashboard() {
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg border border-purple-500/20 shadow-xl overflow-hidden">
             <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-b border-purple-500/20 px-8 py-6">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                📈 Recent Activity
+                <MdAssessment size={24} className="text-purple-400" />
+                Recent Activity
               </h3>
             </div>
 
