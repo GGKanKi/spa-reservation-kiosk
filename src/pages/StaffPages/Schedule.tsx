@@ -47,7 +47,7 @@ export default function ClientList() {
     const fetchRoomAssigned = async () => {
       try {
         setLoading(true);
-        const results = await Orders.getPayedOrders('payed');
+        const results = await Orders.getPayedOrders('paid');
 
         if (results.error) {
           console.error(results.error);

@@ -20,7 +20,7 @@ export type ServiceCategory =
 
 export type OrderStatus =
   | 'pending'
-  | 'payed'
+  | 'paid'
   | 'confirmed'
   | 'completed'
   | 'cancelled'
