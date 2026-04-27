@@ -5,12 +5,18 @@ import { useState, useEffect } from "react";
 import { Users as UsersIcon, X, ShoppingBag, Clock, CheckCircle, XCircle, Calendar, LayoutDashboard } from "lucide-react";
 import { Orders } from "../../services/OrderServices";
 
+// Navigation Icons
+import { MdDashboard, MdSettings } from "react-icons/md";
+import { FaSpa, FaCalendarAlt, FaShoppingBag } from "react-icons/fa";
+import { BsStars } from "react-icons/bs";
+
 const navItems = [
-  { label: "DASHBOARD", path: "/member/dashboard", icon: "🏠" },
-  { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: "✨" },
-  { label: "ORDERS", path: "/orders", icon: "🛍️" },
-  { label: "SETTINGS", path: "/member-settings", icon: "👤" }
+  { label: "DASHBOARD", path: "/member/dashboard",  icon: <MdDashboard /> },
+  { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: <BsStars /> },
+  { label: "ORDERS", path: "/orders", icon: <FaShoppingBag /> },
+  { label: "SETTINGS", path: "/member-settings", icon: <MdSettings /> }
 ];
+
 
 export default function MemberDashboard() {
   const navigate = useNavigate();

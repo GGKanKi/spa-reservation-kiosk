@@ -7,12 +7,18 @@ import { Users as UsersIcon, Mail, Phone, User, X } from "lucide-react";
 
 type UserProfile = Awaited<ReturnType<typeof Users.getUserProfile>>;
 
+// Navigation Icons
+import { MdDashboard, MdSettings } from "react-icons/md";
+import { FaSpa, FaCalendarAlt, FaShoppingBag } from "react-icons/fa";
+import { BsStars } from "react-icons/bs";
+
 const navItems = [
-  { label: "DASHBOARD", path: "/member/dashboard", icon: "🏠" },
-  { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: "✨" },
-  { label: "ORDERS", path: "/orders", icon: "🛍️" },
-  { label: "SETTINGS", path: "/member-settings", icon: "👤" }
+  { label: "DASHBOARD", path: "/member/dashboard",  icon: <MdDashboard /> },
+  { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: <BsStars /> },
+  { label: "ORDERS", path: "/orders", icon: <FaShoppingBag /> },
+  { label: "SETTINGS", path: "/member-settings", icon: <MdSettings /> }
 ];
+
 
 export default function Settings() {
   const navigate = useNavigate();

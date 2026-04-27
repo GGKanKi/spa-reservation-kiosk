@@ -9,29 +9,42 @@ import { Orders } from "../../services/OrderServices";
 import { Users as UsersIcon, X, Plus, ArrowLeft, ShoppingCart, Sparkles } from "lucide-react";
 import type { ServiceCategory } from "../../types/database.types";
 
+// Navigation Icons
+import { MdDashboard, MdSettings } from "react-icons/md";
+import { FaSpa, FaCalendarAlt, FaShoppingBag } from "react-icons/fa";
+import { BsStars } from "react-icons/bs";
+
+
+// Status Icons
+import { FaBoxOpen, FaClock, FaCheckCircle, FaTimesCircle, FaMoneyBillWave } from "react-icons/fa";
+
+// Category Icons
+import { LuWind, LuWaves, LuSparkles, LuLeaf, LuHand, LuFlower2, LuPackage } from 'react-icons/lu';
+
+
 const navItems = [
-  { label: "DASHBOARD", path: "/member/dashboard", icon: "🏠" },
-  { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: "✨" },
-  { label: "ORDERS", path: "/orders", icon: "🛍️" },
-  { label: "SETTINGS", path: "/member-settings", icon: "👤" }
+  { label: "DASHBOARD", path: "/member/dashboard",  icon: <MdDashboard /> },
+  { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: <BsStars /> },
+  { label: "ORDERS", path: "/orders", icon: <FaShoppingBag /> },
+  { label: "SETTINGS", path: "/member-settings", icon: <MdSettings /> }
 ];
 
 interface CategoryItem {
   id: ServiceCategory;
   name: string;
-  icon: string;
+  icon: React.ReactNode;
   color: string;
   description: string;
 }
 
 const CATEGORIES: CategoryItem[] = [
-  { id: 'massage', name: 'Massage', icon: '💆', color: 'from-blue-500 to-blue-600', description: 'Relaxing massage therapies' },
-  { id: 'spa', name: 'Spa', icon: '🧖', color: 'from-purple-500 to-purple-600', description: 'Full body spa treatments' },
-  { id: 'facial', name: 'Facial', icon: '✨', color: 'from-pink-500 to-pink-600', description: 'Skin care & facial treatments' },
-  { id: 'body_wrap', name: 'Body Wrap', icon: '🌿', color: 'from-green-500 to-green-600', description: 'Body wrapping treatments' },
-  { id: 'nail_care', name: 'Nail Care', icon: '💅', color: 'from-red-500 to-red-600', description: 'Nail and manicure services' },
-  { id: 'aromatherapy', name: 'Aromatherapy', icon: '🌸', color: 'from-amber-500 to-amber-600', description: 'Aromatherapy sessions' },
-  { id: 'bundle', name: 'Bundles', icon: '🎁', color: 'from-indigo-500 to-indigo-600', description: 'Package deals & bundles' }
+  { id: 'massage', name: 'Massage', icon: <LuWind />, color: 'from-blue-500 to-blue-600', description: 'Relaxing massage therapies' },
+  { id: 'spa', name: 'Spa', icon: <LuWaves />, color: 'from-purple-500 to-purple-600', description: 'Full body spa treatments' },
+  { id: 'facial', name: 'Facial', icon: <LuSparkles />, color: 'from-pink-500 to-pink-600', description: 'Skin care & facial treatments' },
+  { id: 'body_wrap', name: 'Body Wrap', icon: <LuLeaf />, color: 'from-green-500 to-green-600', description: 'Body wrapping treatments' },
+  { id: 'nail_care', name: 'Nail Care', icon: <LuHand />, color: 'from-red-500 to-red-600', description: 'Nail and manicure services' },
+  { id: 'aromatherapy', name: 'Aromatherapy', icon: <LuFlower2 />, color: 'from-amber-500 to-amber-600', description: 'Aromatherapy sessions' },
+  { id: 'bundle', name: 'Bundles', icon: <LuPackage />, color: 'from-indigo-500 to-indigo-600', description: 'Package deals & bundles' }
 ];
 
 export default function MemberBooking() {

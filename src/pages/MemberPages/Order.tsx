@@ -8,12 +8,18 @@ import { Services } from "../../services/ServiceServices";
 import { Orders } from "../../services/OrderServices";
 import { Users as UsersIcon, Search, Edit, X, Plus } from "lucide-react";
 
+// Navigation Icons
+import { MdDashboard, MdSettings } from "react-icons/md";
+import { FaSpa, FaCalendarAlt, FaShoppingBag } from "react-icons/fa";
+import { BsStars } from "react-icons/bs";
+
 const navItems = [
-  { label: "DASHBOARD", path: "/member/dashboard", icon: "🏠" },
-  { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: "✨" },
-  { label: "ORDERS", path: "/orders", icon: "🛍️" },
-  { label: "SETTINGS", path: "/member-settings", icon: "👤" }
+  { label: "DASHBOARD", path: "/member/dashboard",  icon: <MdDashboard /> },
+  { label: "BOOK-A-SERVICE", path: "/book-a-service", icon: <BsStars /> },
+  { label: "ORDERS", path: "/orders", icon: <FaShoppingBag /> },
+  { label: "SETTINGS", path: "/member-settings", icon: <MdSettings /> }
 ];
+
 
 const timeSlots = [
   { label: '9:00 AM - 10:00 AM', start: '09:00', end: '10:00' },
