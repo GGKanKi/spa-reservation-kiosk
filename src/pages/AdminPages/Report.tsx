@@ -2,16 +2,22 @@ import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 
+// React Icons
+import { MdDashboard, MdPeople, MdSettings, MdPayment, MdAssessment } from "react-icons/md";
+import { FaUserTie, FaSpa, FaDoorOpen, FaBoxOpen } from "react-icons/fa";
+
+
+
 const navItems = [
-  { label: "DASHBOARD", path: "/admin/dashboard" },
-  { label: "USERS", path: "/admin/user-management" },
-  { label: "STAFFS", path: "/admin/staff-management" },
-  { label: "SERVICES", path: "/admin/service-management" },
-  { label: "ROOMS", path: "/admin/room-management" },
-  { label: "ORDERS", path: "/admin/orders" },
-  { label: "PAYMENTS", path: "/admin/payments" },
-  { label: "REPORTS", path: "/admin/reports" },
-  { label: "SETTINGS", path: "/admin/settings" },
+  { label: "DASHBOARD", path: "/admin/dashboard", icon: <MdDashboard size={20} /> },
+  { label: "USERS", path: "/admin/user-management", icon: <MdPeople size={20} /> },
+  { label: "STAFFS", path: "/admin/staff-management", icon: <FaUserTie size={20} /> },
+  { label: "SERVICES", path: "/admin/service-management", icon: <FaSpa size={20} /> },
+  { label: "ROOMS", path: "/admin/room-management", icon: <FaDoorOpen size={20} /> },
+  { label: "ORDERS", path: "/admin/orders", icon: <FaBoxOpen size={20} /> },
+  { label: "PAYMENTS", path: "/admin/payments", icon: <MdPayment size={20} /> },
+  { label: "REPORTS", path: "/admin/reports", icon: <MdAssessment size={20} /> },
+  { label: "SETTINGS", path: "/admin/settings", icon: <MdSettings size={20} /> },
 ];
 
 export default function ReportList() {

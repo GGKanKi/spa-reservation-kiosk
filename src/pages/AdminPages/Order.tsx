@@ -11,8 +11,7 @@ import { Rooms } from "../../services/RoomService";
 
 // React Icons
 import { MdDashboard, MdPeople, MdSettings, MdPayment, MdAssessment } from "react-icons/md";
-import { FaUserTie, FaSpa, FaDoorOpen, FaBoxOpen, FaSignOutAlt } from "react-icons/fa";
-import { BsLightningChargeFill, BsArrowRightShort } from "react-icons/bs";
+import { FaUserTie, FaSpa, FaDoorOpen, FaBoxOpen } from "react-icons/fa";
 
 
 
