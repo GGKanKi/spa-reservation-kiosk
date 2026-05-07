@@ -3,15 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 import { Users } from "../../services/UserServices";
-import { Users as UsersIcon, Mail, Phone, User, X } from "lucide-react";
+import { Mail } from "lucide-react";
 
-type UserProfile = Awaited<ReturnType<typeof Users.getUserProfile>>;
+// React Icons
+import { MdDashboard, MdSettings } from "react-icons/md";
+import { FaCalendarAlt, FaSignOutAlt, FaUserTie, FaUser } from "react-icons/fa";
+import { MdPayment } from "react-icons/md";
 
 const navItems = [
-  { label: "DASHBOARD", path: "/staff/dashboard", icon: "🏠" },
-  { label: "SCHEDULE", path: "/staff/schedule", icon: "📅" },
-  { label: "TRANSACTIONS", path: "/staff/transactions", icon: "💳" },
-  { label: "SETTINGS", path: "/staff-settings", icon: "👤" }
+  { label: "DASHBOARD", path: "/staff/dashboard", icon: <MdDashboard size={20} /> },
+  { label: "SCHEDULE", path: "/staff/schedule", icon: <FaCalendarAlt size={20} /> },
+  { label: "TRANSACTIONS", path: "/staff/transactions", icon: <MdPayment size={20} /> },
+  { label: "SETTINGS", path: "/staff-settings", icon: <MdSettings size={20} /> }
 ];
 
 export default function Settings() {
@@ -38,18 +41,13 @@ export default function Settings() {
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-      }
+      if (user) setUserId(user.id);
     };
     getCurrentUser();
   }, []);
 
   const handleSave = async () => {
-    if (!userId) {
-      setErrorMessage("User ID not found");
-      return;
-    }
+    if (!userId) { setErrorMessage("User ID not found"); return; }
 
     try {
       setLoading(true);
@@ -69,7 +67,7 @@ export default function Settings() {
         return;
       }
 
-      const result = await Users.updateUser(userId, updatePayload)
+      const result = await Users.updateUser(userId, updatePayload);
 
       if (result.error) {
         setErrorMessage(result.error);
@@ -81,7 +79,6 @@ export default function Settings() {
         setTimeout(() => setSuccessChange(false), 3000);
       }
     } catch (err) {
-      console.error('Error:', err);
       setErrorMessage("Failed to save");
       setFailedChange(true);
     } finally {
@@ -91,10 +88,7 @@ export default function Settings() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleCancel = () => {
@@ -121,7 +115,6 @@ export default function Settings() {
 
         if (results.error) {
           setFailedChange(true);
-          console.error('Error:', results.error);
         } else {
           setUserProfileData(results.data);
           setFormData({
@@ -134,7 +127,6 @@ export default function Settings() {
           });
         }
       } catch (err) {
-        console.error('Error Message', err);
         setFailedChange(true);
       } finally {
         setLoading(false);
@@ -159,10 +151,10 @@ export default function Settings() {
         <div className="p-6 border-b border-purple-500/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <UsersIcon size={24} className="text-white" />
+              <FaUserTie size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-white font-bold text-lg">Admin Panel</h1>
+              <h1 className="text-white font-bold text-lg">Staff Panel</h1>
               <p className="text-purple-400 text-xs">SPA Management</p>
             </div>
           </div>
@@ -175,10 +167,11 @@ export default function Settings() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${isActive
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                  : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
-                  }`}
+                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                    : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
+                }`}
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="font-medium text-sm">{item.label}</span>
@@ -189,13 +182,10 @@ export default function Settings() {
 
         <div className="p-4 border-t border-purple-500/10">
           <button
-            onClick={() => {
-              supabase.auth.signOut();
-              navigate("/login");
-            }}
+            onClick={() => { supabase.auth.signOut(); navigate("/login"); }}
             className="w-full h-[48px] flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
           >
-            <X size={18} />
+            <FaSignOutAlt size={18} />
             LOGOUT
           </button>
         </div>
@@ -204,34 +194,31 @@ export default function Settings() {
       {/* Main Content */}
       <main className="flex-1 p-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-              ⚙️ Account Settings
+              <MdSettings size={40} className="text-purple-400" />
+              Account Settings
             </h1>
             <p className="text-slate-400">Manage your personal information</p>
           </div>
 
-          {/* Success Message */}
           {successChange && (
             <div className="mb-6 p-4 bg-green-500/20 border-2 border-green-500/50 rounded-lg text-green-300 font-semibold">
-              ✅ Changes saved successfully!
+              Changes saved successfully!
             </div>
           )}
 
-          {/* Error Message */}
           {(failedChange || errorMessage) && (
             <div className="mb-6 p-4 bg-red-500/20 border-2 border-red-500/50 rounded-lg text-red-300 font-semibold">
-              ❌ {errorMessage || "Failed to save changes"}
+              {errorMessage || "Failed to save changes"}
             </div>
           )}
 
-          {/* Profile Card */}
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-lg border border-purple-500/20 shadow-xl overflow-hidden">
             <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-b border-purple-500/20 px-8 py-6">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <User size={32} className="text-white" />
+                  <FaUser size={32} className="text-white" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">
@@ -244,69 +231,52 @@ export default function Settings() {
               </div>
             </div>
 
-            {/* Form Content */}
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-
-                {/* First Name */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-3">
-                    First Name
-                  </label>
+                  <label className="block text-sm font-semibold text-slate-300 mb-3">First Name</label>
                   <input
                     type="text"
                     name="first_name"
                     value={formData.first_name}
                     onChange={handleInputChange}
                     disabled={!editing}
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
-                      ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-                      : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                      }`}
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
+                      editing ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20" : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
+                    }`}
                   />
                 </div>
 
-                {/* Middle Name */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-3">
-                    Middle Name
-                  </label>
+                  <label className="block text-sm font-semibold text-slate-300 mb-3">Middle Name</label>
                   <input
                     type="text"
                     name="middle_name"
                     value={formData.middle_name}
                     onChange={handleInputChange}
                     disabled={!editing}
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
-                      ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-                      : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                      }`}
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
+                      editing ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20" : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
+                    }`}
                   />
                 </div>
 
-                {/* Last Name */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-3">
-                    Last Name
-                  </label>
+                  <label className="block text-sm font-semibold text-slate-300 mb-3">Last Name</label>
                   <input
                     type="text"
                     name="last_name"
                     value={formData.last_name}
                     onChange={handleInputChange}
                     disabled={!editing}
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
-                      ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-                      : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                      }`}
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
+                      editing ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20" : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
+                    }`}
                   />
                 </div>
 
-                {/* Email (Read-only) */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-3">
-                    Email
-                  </label>
+                  <label className="block text-sm font-semibold text-slate-300 mb-3">Email</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -315,29 +285,22 @@ export default function Settings() {
                   />
                 </div>
 
-                {/* Phone Number */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-300 mb-3">
-                    Phone Number
-                  </label>
+                  <label className="block text-sm font-semibold text-slate-300 mb-3">Phone Number</label>
                   <input
                     type="tel"
                     name="phone_num"
                     value={formData.phone_num}
                     onChange={handleInputChange}
                     disabled={!editing}
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
-                      ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-                      : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                      }`}
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
+                      editing ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20" : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
+                    }`}
                   />
                 </div>
 
-                {/* Password */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-300 mb-3">
-                    Change Password (Leave blank to keep current)
-                  </label>
+                  <label className="block text-sm font-semibold text-slate-300 mb-3">Change Password (Leave blank to keep current)</label>
                   <input
                     type="password"
                     name="password"
@@ -345,15 +308,13 @@ export default function Settings() {
                     onChange={handleInputChange}
                     disabled={!editing}
                     placeholder="Enter new password..."
-                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${editing
-                      ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-                      : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
-                      }`}
+                    className={`w-full h-[48px] px-4 rounded-lg border border-slate-600 outline-none transition-all ${
+                      editing ? "bg-slate-700/50 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20" : "bg-slate-700/30 text-slate-300 cursor-not-allowed"
+                    }`}
                   />
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex gap-4 justify-end pt-6 border-t border-slate-700">
                 {!editing ? (
                   <button

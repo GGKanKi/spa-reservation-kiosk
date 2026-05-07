@@ -203,5 +203,29 @@ export const Orders = {
         }
 
         return {data, error: null}
+    },
+
+
+    async getPaidOrders(orderId: string, status: string = 'paid') {
+        const {data, error} = await supabase
+            .from('Order')
+            .select(`
+                    *, OrderItem(
+                    id,
+                    quantity,
+                    price_at_purchase,
+                    Service(name, category, price, description)
+                    )
+                    `)
+            .eq('id', orderId)
+            .eq('order_status', status)
+            .single()
+
+        if (error) {
+            console.error('Error Message: ', error)
+            return { error: error.message, data: null }  
+        }
+
+        return {data, error: null }
     }
 }
