@@ -4,13 +4,16 @@ import { Users } from "../../services/UserServices";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
 import { Orders } from "../../services/OrderServices";
-import { Users as UsersIcon, X, Calendar, Edit } from "lucide-react";
+
+// React Icons
+import { MdDashboard, MdSettings, MdPayment } from "react-icons/md";
+import { FaCalendarAlt, FaSignOutAlt, FaUserTie, FaEdit } from "react-icons/fa";
 
 const navItems = [
-  { label: "DASHBOARD", path: "/staff/dashboard", icon: "🏠" },
-  { label: "SCHEDULE", path: "/staff/schedule", icon: "📅" },
-  { label: "TRANSACTIONS", path: "/staff/transactions", icon: "💳" },
-  { label: "SETTINGS", path: "/staff-settings", icon: "👤" }
+  { label: "DASHBOARD", path: "/staff/dashboard", icon: <MdDashboard size={20} /> },
+  { label: "SCHEDULE", path: "/staff/schedule", icon: <FaCalendarAlt size={20} /> },
+  { label: "TRANSACTIONS", path: "/staff/transactions", icon: <MdPayment size={20} /> },
+  { label: "SETTINGS", path: "/staff-settings", icon: <MdSettings size={20} /> }
 ];
 
 export default function ClientList() {
@@ -23,20 +26,13 @@ export default function ClientList() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const openCheckModal = (room: any) => {
-    setShowModal(true);
-  };
-
-  const closeCheckModal = () => {
-    setShowModal(false);
-  };
+  const openCheckModal = (room: any) => setShowModal(true);
+  const closeCheckModal = () => setShowModal(false);
 
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-      }
+      if (user) setUserId(user.id);
     };
     getCurrentUser();
   }, []);
@@ -47,7 +43,7 @@ export default function ClientList() {
     const fetchRoomAssigned = async () => {
       try {
         setLoading(true);
-        const results = await Orders.getPayedOrders('paid');
+        const results = await Orders.getPaidOrders('paid');
 
         if (results.error) {
           console.error(results.error);
@@ -58,20 +54,15 @@ export default function ClientList() {
         const orders = Array.isArray(results.data) ? results.data : [];
         setAssignedRoom(orders);
 
-        // Fetch client names
         orders.forEach(async (res) => {
           try {
             const profile = await Users.getUserProfile(res.client_id);
             const name = profile.data?.first_name || "Unknown Client";
-            setClientNames(prev => ({
-              ...prev,
-              [res.client_id]: name
-            }));
+            setClientNames(prev => ({ ...prev, [res.client_id]: name }));
           } catch (err) {
             console.error("Failed to fetch name for", res.client_id);
           }
         });
-
       } catch (err) {
         console.error('Error Message:', err);
         setAssignedRoom([]);
@@ -98,7 +89,7 @@ export default function ClientList() {
         <div className="p-6 border-b border-purple-500/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <UsersIcon size={24} className="text-white" />
+              <FaUserTie size={20} className="text-white" />
             </div>
             <div>
               <h1 className="text-white font-bold text-lg">Staff Panel</h1>
@@ -114,10 +105,11 @@ export default function ClientList() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${isActive
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                  : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
-                  }`}
+                className={`w-full h-[48px] flex items-center gap-3 px-4 rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                    : "text-slate-300 hover:bg-slate-800/50 hover:text-purple-400"
+                }`}
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="font-medium text-sm">{item.label}</span>
@@ -128,13 +120,10 @@ export default function ClientList() {
 
         <div className="p-4 border-t border-purple-500/10">
           <button
-            onClick={() => {
-              supabase.auth.signOut();
-              navigate("/login");
-            }}
+            onClick={() => { supabase.auth.signOut(); navigate("/login"); }}
             className="w-full h-[48px] flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
           >
-            <X size={18} />
+            <FaSignOutAlt size={18} />
             LOGOUT
           </button>
         </div>
@@ -143,11 +132,9 @@ export default function ClientList() {
       {/* Main Content */}
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto space-y-8">
-
-          {/* Header */}
           <div className="mb-2">
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-              <Calendar className="text-purple-400" size={36} />
+              <FaCalendarAlt className="text-purple-400" size={36} />
               Assigned Rooms
             </h1>
             <p className="text-slate-400">View and manage the assigned rooms schedule.</p>
@@ -168,8 +155,9 @@ export default function ClientList() {
                     assignedRoom.map((room, idx) => (
                       <tr
                         key={room.id}
-                        className={`border-b border-slate-700/50 hover:bg-slate-700/30 transition-all duration-200 ${idx % 2 === 0 ? "bg-slate-800/20" : "bg-slate-800/40"
-                          }`}
+                        className={`border-b border-slate-700/50 hover:bg-slate-700/30 transition-all duration-200 ${
+                          idx % 2 === 0 ? "bg-slate-800/20" : "bg-slate-800/40"
+                        }`}
                       >
                         <td className="px-6 py-4 text-white font-medium">{room.name}</td>
                         <td className="px-6 py-4 text-slate-300">{clientNames[room.client_id] || "Fetching name..."}</td>
@@ -178,7 +166,7 @@ export default function ClientList() {
                             onClick={() => openCheckModal(room)}
                             className="inline-flex items-center gap-2 px-4 py-2 border-2 border-purple-500 bg-transparent text-purple-400 rounded-lg hover:bg-purple-500 hover:text-white transition-all duration-300 text-sm font-semibold"
                           >
-                            <Edit size={16} />
+                            <FaEdit size={16} />
                             EDIT
                           </button>
                         </td>
@@ -195,7 +183,6 @@ export default function ClientList() {
               </table>
             </div>
           </div>
-
         </div>
       </main>
     </div>
